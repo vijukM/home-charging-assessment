@@ -1,0 +1,203 @@
+/* App.css - Stilovi za aplikaciju */
+
+.App {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.App-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+.App-header p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* FORMA STILOVI */
+.form-section {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.form-section h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+}
+
+.form-group input:disabled {
+  background-color: #e9ecef;
+  opacity: 0.6;
+}
+
+/* DUGMAD */
+.btn {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 5px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #545b62;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* REZULTAT SEKCIJA */
+.result-section {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.result-section h2 {
+  color: #155724;
+  margin-bottom: 15px;
+}
+
+.result-card {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.result-card p {
+  margin: 8px 0;
+  padding: 5px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.result-card p:last-of-type {
+  border-bottom: none;
+}
+
+.result-card strong {
+  color: #333;
+  min-width: 120px;
+  display: inline-block;
+}
+
+/* GREŠKA SEKCIJA */
+.error-section {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.error-section h3 {
+  color: #721c24;
+  margin-bottom: 10px;
+}
+
+.error-message {
+  color: #721c24;
+  margin: 0;
+  text-align: left;
+  background: white;
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 4px solid #dc3545;
+}
+
+/* LOADING SEKCIJA */
+.loading-section {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 20px;
+  color: #856404;
+}
+
+/* RESPONSIVE DIZAJN */
+@media (max-width: 600px) {
+  .App {
+    padding: 10px;
+  }
+  
+  .form-section,
+  .result-section,
+  .error-section {
+    padding: 20px;
+  }
+  
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
