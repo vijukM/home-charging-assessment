@@ -29,5 +29,17 @@ namespace home_charging_assessment.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromQuery] string partitionKey, [FromBody] Assessment updated)
+        {
+            var existing = await _service.GetAsync(id, partitionKey);
+            if (existing == null)
+                return NotFound();
+
+            var result = await _service.UpdateAsync(id, partitionKey, updated);
+            return Ok(result);
+        }
+
     }
 }

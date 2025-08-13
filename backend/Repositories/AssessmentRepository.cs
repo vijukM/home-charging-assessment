@@ -33,5 +33,16 @@ namespace home_charging_assessment.Repositories
                 return null;
             }
         }
+
+        public async Task<Assessment?> UpdateAsync(string id, string partitionKey, Assessment updated)
+        {
+            var response = await _container.ReplaceItemAsync(
+                updated,
+                id,
+                new PartitionKey(partitionKey)
+            );
+            return response.Resource;
+        }
+
     }
 }

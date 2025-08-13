@@ -1,0 +1,647 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  min-height: 100vh;
+  margin-top: 80px;
+  padding: 20px;
+;}  
+
+
+
+/* MAIN CONTENT - SPLIT LAYOUT */
+.main-content {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+/* LEVA STRANA - FORMA */
+.left-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-container {
+  background: white;
+  padding: 35px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid #c8e6c8;
+  min-height: 500px;
+}
+
+.welcome-screen {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.welcome-screen h2 {
+  color: #2d5a2d;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+.welcome-screen p {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+/* ---------- GRID LAYOUT ZA FORMU (2 KOLONE) ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 20px; /* red-gap column-gap */
+  align-items: start;
+}
+
+/* U gridu, standardni form-group više ne treba velikog margin-bottom-a jer grid ima gap */
+.form-grid .form-group {
+  margin-bottom: 0;
+}
+
+/* Ako polje treba da zauzme celu širinu (npr. textarea ili radio grupa) */
+.form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+/* Mobile: jedna kolona */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* centriraj header ako želiš na mobilnom (ostaje kao i pre) */
+  .step-header {
+    justify-content: center;
+  }
+}
+
+/* Ako želiš da telefon u grid ćeliji lepo stoji i zauzima celu ćeliju */
+.form-grid .phone-group .phone-input-wrapper {
+  max-width: 100%;
+}
+
+/* sitna prilagođavanja da label i input stoje bolje u dva stupca */
+.form-grid .form-group label {
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* FORM GROUPS */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2d5a2d;
+  font-size: 1.1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  background: #fafffe;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: #81c784;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-style: italic;
+}
+
+/* RADIO GROUPS */
+.radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.radio-option:hover {
+  border-color: #4CAF50;
+  background: #f9fff9;
+}
+
+.radio-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+.radio-option input[type="radio"]:checked + span {
+  color: #2d5a2d;
+  font-weight: 600;
+}
+
+.radio-option:has(input:checked) {
+  border-color: #4CAF50;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+}
+
+/* NAVIGATION BUTTONS */
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 35px;
+  gap: 15px;
+}
+
+.btn {
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049 0%, #5cb860 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #757575 0%, #9e9e9e 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(117, 117, 117, 0.3);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #616161 0%, #757575 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(117, 117, 117, 0.4);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #2e7d2e 0%, #4CAF50 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(46, 125, 46, 0.4);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #26692b 0%, #45a049 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(46, 125, 46, 0.5);
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+
+.btn-start:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049 0%, #5cb860 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* DESNA STRANA - STEPPER */
+.right-side {
+  width: 300px;
+  position: sticky;
+  top: 20px;
+}
+
+.stepper-container {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid #c8e6c8;
+}
+
+.stepper-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.stepper-item:last-of-type {
+  margin-bottom: 0;
+}
+
+.step-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-right: 20px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.step-circle.inactive {
+  background: #f5f5f5;
+  border: 2px solid #ddd;
+}
+
+.step-circle.active {
+  /*background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);*/
+  border: 3px solid #149d1b;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+  transform: scale(1.3);
+  background: #f5f5f5;
+
+}
+
+.step-circle.completed {
+ /* background: linear-gradient(135deg, #a6ffa6 0%, #8afb8e 100%);*/
+  border: 2px solid #149d1b;
+  background: #f5f5f5;
+
+}
+
+.step-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-image {
+  font-size: 1.8rem;
+  color: #666;
+}
+.step-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-img {
+  max-width: 80%;
+  max-height: 80%;
+}
+.step-circle.active .placeholder-image,
+.step-circle.completed .placeholder-image {
+  color: white;
+}
+
+.step-label {
+  font-weight: 600;
+  color: #2d5a2d;
+  font-size: 1rem;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.step-circle.active + .step-label {
+  color: #1e4620;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.step-connector {
+  position: absolute;
+  left: 29px;
+  top: 60px;
+  width: 3.5px;
+  height: 25px;
+  background: #ddd;
+  transition: all 0.3s ease;
+}
+.stepper-item:has(.step-circle.active) .step-connector {
+  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
+    top: 65px;
+}
+.stepper-item:has(.step-circle.completed) .step-connector{
+  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
+}
+
+/* MESSAGES */
+.message {
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-message {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: 2px solid #4CAF50;
+  color: #2d5a2d;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+}
+
+.error-message {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border: 2px solid #dc3545;
+  color: #721c24;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .main-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .right-side {
+    width: 100%;
+    position: static;
+  }
+  
+  .stepper-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 20px;
+  }
+  
+  .stepper-item {
+    flex-direction: column;
+    margin-bottom: 0;
+    margin-right: 30px;
+    min-width: 120px;
+    text-align: center;
+  }
+  
+  .step-circle {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .step-connector {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .App {
+    padding: 15px;
+  }
+  
+  .App-header {
+    padding: 20px;
+  }
+  
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .form-container {
+    padding: 25px;
+  }
+
+  .navigation-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+  }
+  
+  .step-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  
+  .step-label {
+    font-size: 0.9rem;
+  }
+}
+
+/* LOADING ANIMATIONS */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.btn:disabled {
+  animation: pulse 1.5s infinite;
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #45a049 0%, #5cb860 100%);
+}
+
+/* FOCUS VISIBLE STYLES ZA ACCESSIBILITY */
+.btn:focus-visible,
+.step-circle:focus-visible {
+  outline: 3px solid #4CAF50;
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #4CAF50;
+  outline-offset: 2px;
+}
+
+
+/* Phone input wrapper */
+.phone-input-wrapper {
+  display: block;
+  max-width: 360px;
+}
+
+.phone-group .react-tel-input {
+  width: 100%;
+  font-size: 1rem;
+}
+
+/* Uklapa telefon u formu */
+.phone-group .form-control, 
+.phone-group input, 
+.phone-group .react-tel-input .form-control {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pomoćni tekst */
+.phone-help {
+  display: block;
+  margin-top: 6px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+/* Ako želiš suptilniji stil za flag + input */
+.react-tel-input .selected-flag {
+  border-radius: 6px 0 0 6px;
+}
+
+.react-tel-input .form-control {
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  padding-left: 12px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .phone-input-wrapper {
+    max-width: 100%;
+  }
+}
+/* Ukloni sve linije i osiguraj da h3 nema border/padding koji pomera element */
+.step-form h3,
+.step-form h3.step-title,
+.step-header .step-title {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 12px;
+}
+
+/* Header (image + title) - grupu centriramo horizontalno */
+.step-header {
+  display: flex;
+  align-items: center;    /* vertikalno poravnanje slike i teksta */
+  justify-content: center;/* centriraj grupu unutar dostupnog prostora */
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+/* slika pored naslova */
+.step-header-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  display: block;
+  border-radius: 6px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* naslov (bez linije, centriran) */
+.step-title {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #2d5a2d;
+  font-weight: 600;
+  display: inline-block;
+  padding-bottom: 0;
+  text-align: center;     /* tekst naslova centriran u okviru svog bloka */
+}
+
+/* responsive */
+@media (max-width: 600px) {
+  .step-header-img {
+    width: 32px;
+    height: 32px;
+  }
+  .step-title {
+    font-size: 1.2rem;
+  }
+}

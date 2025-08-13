@@ -22,5 +22,10 @@ namespace home_charging_assessment.Services
         {
             return _repo.GetAsync(id, partitionKey);
         }
+        public Task<Assessment?> UpdateAsync(string id, string partitionKey, Assessment updated)
+        {
+            return _repo.UpdateAsync(id, partitionKey, updated);
+        }
+
     }
 }
