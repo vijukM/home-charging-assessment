@@ -1,3 +1,5 @@
+using home_charging_assessment;
+using home_charging_assessment.DbConfig;
 using home_charging_assessment.Repositories;
 using home_charging_assessment.RepositoryInterfaces;
 using home_charging_assessment.ServiceInterfaces;
@@ -23,6 +25,10 @@ await dbResponse.Database.CreateContainerIfNotExistsAsync(
 
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+builder.Services.AddScoped<IChargerLocationRepository, ChargerLocationRepository>();
+builder.Services.AddScoped<IChargerLocationService, ChargerLocationService>();
+builder.Services.AddScoped<IPanelLocationRepository, PanelLocationRepository>();
+builder.Services.AddScoped<IPanelLocationService, PanelLocationService>();
 
 builder.Services.AddCors(options =>
 {
@@ -37,7 +43,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
+using (var scope = app.Services.CreateScope())
+{
+    await ChargerLocationInitializer.InitializeAsync( cosmosClient,"TestDb","chargerLocation", "/id" );
+    await PanelLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "panelLocation", "/id");
+
+}
+
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

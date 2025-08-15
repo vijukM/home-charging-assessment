@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace home_charging_assessment.Models
 {
@@ -12,5 +13,15 @@ namespace home_charging_assessment.Models
 
         [JsonPropertyName("numberOfOpenSlots")]
         public int? NumberOfOpenSlots { get; set; } // otvoreni slotovi
+    }
+
+
+    public class PanelLocation
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        [JsonProperty("name")]
+        public string Name { get; set; } = string.Empty; // npr. "Garage"
     }
 }
