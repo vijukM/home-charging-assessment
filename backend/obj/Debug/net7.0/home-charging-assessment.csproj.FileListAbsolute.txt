@@ -128,3 +128,12 @@ C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessm
 C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\obj\Debug\net7.0\home-charging-assessment.pdb
 C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\obj\Debug\net7.0\home-charging-assessment.genruntimeconfig.cache
 C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\obj\Debug\net7.0\ref\home-charging-assessment.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\BCrypt.Net-Next.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Korisnik\OneDrive\Radna površina\Praksa\projekat\home-charging-assessment\backend\bin\Debug\net7.0\System.IdentityModel.Tokens.Jwt.dll

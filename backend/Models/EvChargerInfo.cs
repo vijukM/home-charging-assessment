@@ -4,16 +4,18 @@ namespace home_charging_assessment.Models
 {
     public class EvChargerInfo
     {
+        [JsonPropertyName("hasCharger")]
+        public bool HasCharger { get; set; } = false; // Da li već ima punjač
+
         [JsonPropertyName("wantsToBuy")]
-        public bool WantsToBuy { get; set; } = false;
+        public bool WantsToBuy { get; set; } = false; // Da li želi da kupi punjač
 
-        [JsonPropertyName("brand")]
-        public string? Brand { get; set; }
+        [JsonPropertyName("evCharger")]
+        public EvCharger? EvCharger { get; set; } // Jedan punjač objekat
 
-        [JsonPropertyName("model")]
-        public string? Model { get; set; }
-
-        [JsonPropertyName("powerKw")]
-        public double? PowerKw { get; set; } // opcionalno
+        // Logika:
+        // HasCharger = true + EvCharger != null = Ima postojeći punjač
+        // HasCharger = false + WantsToBuy = true + EvCharger != null = Želi da kupi punjač  
+        // HasCharger = false + WantsToBuy = false + EvCharger = null = Ne želi ništa / želi preporuke
     }
 }

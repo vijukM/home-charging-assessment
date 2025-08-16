@@ -4,8 +4,11 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import bgRight from './res/bg-right-side2.png';
 import useElectricVehicles from './useElectricVehicles';
+import assessmentService from './services/assessmentService';
+import authService from './services/authService';
+import Swal from 'sweetalert2';
 
-const API_URL = 'http://localhost:5092/api/Assessment';
+
 const phoneRegex = /\d{10,15}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -46,10 +49,13 @@ function App() {
       NumberOfHighEnergyDevices: 0
     },
     EvChargerInfo: {
+      HasCharger: false,
       WantsToBuy: false,
-      Brand: '',
-      Model: '',
-      PowerKw: 0
+      EvCharger: {
+        Brand: '',
+        Model: '',
+        PowerKw: 0
+      }
     },
     CurrentPage: 0,
     IsComplete: false
@@ -58,6 +64,10 @@ function App() {
   // Track which steps have been saved
   const [savedSteps, setSavedSteps] = useState(new Set());
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+
+  // DODANO - State za auth proveravanja
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
 
   // Jednostavan način - koristi samo najvažnije gradove
   const loadCitiesForCountry = (countryName) => {
@@ -112,6 +122,8 @@ function App() {
   const brands = Array.from(new Set(allEVs.map(v => v.brand))).sort();
   const [baseModels, setBaseModels] = useState([]);
   const [models, setModels] = useState([]); 
+  const [alertShown, setAlertShown] = useState(false);
+
   // State za validacione greške
   const [validationErrors, setValidationErrors] = useState({
     email: '',
@@ -119,6 +131,8 @@ function App() {
   });
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
+
+  
 
   // Funkcije za validaciju
   const validatePhone = (phone) => {
@@ -289,29 +303,7 @@ function App() {
   // Detektovana zemlja (ISO2, lowercase) za react-phone-input-2
   const [detectedCountry, setDetectedCountry] = useState('rs');
 
-  // API pozivi pomoću fetch
-  const apiCall = async (method, url, data = null) => {
-    const options = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    if (data) {
-      options.body = JSON.stringify(data);
-    }
-
-    const response = await fetch(url, options);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.title || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  };
-
+  // PROMENJENO - Koristi assessmentService umesto direktnih API poziva
   // Detektuj državu po IP-u pri mount-u
   useEffect(() => {
     const detect = async () => {
@@ -338,7 +330,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
-  // Čuvanje trenutnog koraka u bazi
+  // PROMENJENO - Čuvanje trenutnog koraka u bazi
   const saveCurrentStep = async () => {
     if (!assessment.id || !assessment.customerId) {
       console.log('Assessment not yet created, skipping save');
@@ -354,18 +346,28 @@ function App() {
         CurrentPage: currentStep,
         IsComplete: currentStep === steps.length
       };
-      const partitionKey = assessment.customerId;
 
-      await apiCall('PUT', `${API_URL}/${assessment.id}?partitionKey=${encodeURIComponent(partitionKey)}`, updatedAssessment);
+      await assessmentService.updateAssessment(
+        assessment.id, 
+        assessment.customerId, 
+        updatedAssessment
+      );
 
     } catch (error) {
+      console.error('Save step error:', error);
       setError('Error while saving data: ' + error.message);
+      
+      // Handle auth errors
+      if (error.message.includes('log in')) {
+        setIsAuthenticated(false);
+        setAuthMessage('Your session has expired. Please log in again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Kreiranje novog assessment-a
+  // PROMENJENO - Kreiranje novog assessment-a
   const createAssessment = async () => {
     setLoading(true);
     setError(null);
@@ -373,15 +375,23 @@ function App() {
     try {
       const { id, customerId, ...assessmentPayload } = assessment;
 
-      const response = await apiCall('POST', API_URL, assessmentPayload);
+      const response = await assessmentService.createAssessment(assessmentPayload);
 
       setAssessment(prev => ({
         ...prev,
         id: response.id,
         customerId: response.customerId
       }));
+      
     } catch (error) {
-      setError('Error while creating assessment');
+      console.error('Create assessment error:', error);
+      setError('Error while creating assessment: ' + error.message);
+      
+      // Handle auth errors
+      if (error.message.includes('log in')) {
+        setIsAuthenticated(false);
+        setAuthMessage('Your session has expired. Please log in again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -424,7 +434,7 @@ function App() {
     setCurrentStep(0);
   };
 
-  // Finalizovanje assessment-a
+  // PROMENJENO - Finalizovanje assessment-a
   const completeAssessment = async () => {
     setLoading(true);
 
@@ -435,8 +445,12 @@ function App() {
         IsComplete: true,
         CompletedAt: new Date().toISOString()
       };
-      const partitionKey = assessment.customerId;
-      await apiCall('PUT', `${API_URL}/${assessment.id}?partitionKey=${encodeURIComponent(partitionKey)}`, finalAssessment);
+      
+      await assessmentService.updateAssessment(
+        assessment.id,
+        assessment.customerId,
+        finalAssessment
+      );
 
       // Mark all steps as saved when completing assessment
       setSavedSteps(new Set([0, 1, 2, 3, 4, 5]));
@@ -444,7 +458,14 @@ function App() {
       setShowCompletionModal(true);
 
     } catch (error) {
-      setError('Error while completing assessment');
+      console.error('Complete assessment error:', error);
+      setError('Error while completing assessment: ' + error.message);
+      
+      // Handle auth errors  
+      if (error.message.includes('log in')) {
+        setIsAuthenticated(false);
+        setAuthMessage('Your session has expired. Please log in again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -480,15 +501,28 @@ function App() {
         return stepData.Location && stepData.DistanceFromPanelMeters >= 0;
       case 'HomeInfo':
         return stepData.Address.Country && stepData.Address.City && stepData.Address.Street && stepData.Address.StreetNumber && stepData.Address.PostalCode && stepData.NumberOfHighEnergyDevices >= 0;
-      case 'EvChargerInfo':
-        // If user doesn't want to buy, step is valid
-        if (stepData.WantsToBuy === false) return true;
-        // If user wants to buy, all three fields are required
-        if (stepData.WantsToBuy === true) {
-          return stepData.Brand && stepData.Model && stepData.PowerKw > 0;
-        }
-        // If WantsToBuy is null/undefined, step is not valid
-        return false;
+     case 'EvChargerInfo':
+          // Ako ima punjač, sva tri polja su obavezna
+          if (stepData.HasCharger === true) {
+            return stepData.EvCharger?.Brand && 
+                  stepData.EvCharger?.Model && 
+                  stepData.EvCharger?.PowerKw > 0;
+          }
+          // Ako nema punjač
+          if (stepData.HasCharger === false) {
+            // Ako želi da kupi, sva tri polja su obavezna
+            if (stepData.WantsToBuy === true) {
+              return stepData.EvCharger?.Brand && 
+                    stepData.EvCharger?.Model && 
+                    stepData.EvCharger?.PowerKw > 0;
+            }
+            
+            // Ako ne želi da kupi (želi preporuke), to je validno
+            return stepData.WantsToBuy === false;
+          }
+    return false;
+
+
       default:
         return false;
     }
@@ -569,12 +603,15 @@ function App() {
         },
         NumberOfHighEnergyDevices: 0
       },
-      EvChargerInfo: {
-        WantsToBuy: false,
+     EvChargerInfo: {
+      HasCharger: false,
+      WantsToBuy: false,
+      EvCharger: {
         Brand: '',
         Model: '',
         PowerKw: 0
-      },
+      }
+    },
       CurrentPage: 0,
       IsComplete: false
     });
@@ -624,17 +661,107 @@ function App() {
           },
           NumberOfHighEnergyDevices: 0
         },
-        EvChargerInfo: {
-          WantsToBuy: false,
-          Brand: '',
-          Model: '',
-          PowerKw: 0
-        },
+     EvChargerInfo: {
+      HasCharger: false,
+      WantsToBuy: false,
+      EvCharger: {
+        Brand: '',
+        Model: '',
+        PowerKw: 0
+      }
+    },
         CurrentPage: 0,
         IsComplete: false
       });
     }
   };
+
+ useEffect(() => {
+  if (!authService.isLoggedIn()) {
+    setIsAuthenticated(false);
+    
+    // Prikaži SweetAlert2 samo jednom
+    if (!alertShown) {
+      setAlertShown(true);
+      showAuthAlert();
+    }
+    return;
+  }
+
+  setIsAuthenticated(true);
+  // ... ostatak logike
+}, [alertShown]);
+
+// Nova funkcija za prikaz alert-a
+const showAuthAlert = () => {
+  Swal.fire({
+    title: 'Login Required',
+    text: 'You need to log in to access the EV charging assessment.',
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'Go to Login',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#10b981',
+    cancelButtonColor: '#6b7280',
+    showCloseButton: true,
+    reverseButtons: true,
+    allowOutsideClick: true,  // Dozvoli zatvaranje klikom van
+    allowEscapeKey: true,     // Dozvoli zatvaranje ESC tasterom
+    customClass: {
+      popup: 'auth-alert-popup',
+      confirmButton: 'auth-alert-login-btn',
+      cancelButton: 'auth-alert-cancel-btn'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Idi na home stranicu za login
+      window.location.href = '/';
+    } else if (result.isDismissed) {
+      // Ako je zatvoreno (Cancel, X, ESC, ili klik van)
+      // Možeš dodati logiku ovde ili samo ostaviti korisnika na strani
+      console.log('Alert dismissed - user stays on page');
+      // Opciono: prikaži button da može ponovo da otvori alert
+      setAlertShown(false); // Reset da može ponovo da se prikaže
+    }
+  });
+};
+
+// Auth check early return
+if (!isAuthenticated) {
+  return (
+    <div className="App">
+      <div className="assessment-loading">
+        <div className="loading-content">
+          <div className="auth-message">
+            <div className="lock-icon-large">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="#10b981"/>
+                <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#059669" strokeWidth="2"/>
+                <circle cx="12" cy="16" r="1" fill="white"/>
+              </svg>
+            </div>
+            <h2>Authentication Required</h2>
+            <p>You need to log in to access the EV charging assessment.</p>
+            <div className="auth-actions">
+              <button 
+                onClick={showAuthAlert}
+                className="retry-auth-btn"
+              >
+                Show Login Options
+              </button>
+              <button 
+                onClick={() => window.location.href = '/'}
+                className="go-home-btn"
+              >
+                Go to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   // Renderovanje forme za trenutni korak
   const renderCurrentStep = () => {
@@ -706,12 +833,15 @@ function App() {
                         },
                         NumberOfHighEnergyDevices: 0
                       },
-                      EvChargerInfo: {
-                        WantsToBuy: false,
+                    EvChargerInfo: {
+                      HasCharger: false,
+                      WantsToBuy: false,
+                      EvCharger: {
                         Brand: '',
                         Model: '',
                         PowerKw: 0
-                      },
+                      }
+                    },
                       CurrentPage: 0,
                       IsComplete: false
                     });
@@ -1075,104 +1205,261 @@ function App() {
       </div>
     );
 
-    case 'EvChargerInfo':
-      return (
-        <div className="step-form">
-          <StepHeader title={step.title} image={step.image} />
+case 'EvChargerInfo':
+  return (
+    <div className="step-form ev-charger-step">
+      <StepHeader title={step.title} image={step.image} />
 
-          <div className="form-group">
-            <label>Do you want to buy an EV charger?</label>
-            <div className="radio-group">
-              <label className="radio-option">
-                <input
-                  type="radio"
-                  name="wantsToBuy"
-                  checked={stepData.WantsToBuy === true}
-                  onChange={() => updateStepData('EvChargerInfo', 'WantsToBuy', true)}
-                />
-                <span>Yes</span>
-              </label>
-              <label className="radio-option">
-                <input
-                  type="radio"
-                  name="wantsToBuy"
-                  checked={stepData.WantsToBuy === false}
-                  onChange={() => updateStepData('EvChargerInfo', 'WantsToBuy', false)}
-                />
-                <span>No</span>
-              </label>
-            </div>
+      {/* Main Question - Inline */}
+      <div className="inline-question">
+        <div className="question-row">
+          <div className="question-label">
+            <svg className="question-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C13.1 2 14 2.9 14 4V6H18C19.1 6 20 6.9 20 8V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V8C4 6.9 4.9 6 6 6H10V4C10 2.9 10.9 2 12 2ZM12 4V6H12V4ZM8 10V14H16V10H8Z" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.5" fill="white"/>
+            </svg>
+            <span>Do you currently have an EV charger?</span>
           </div>
+          
+          <div className="inline-options">
+            <label className={`inline-radio ${stepData.HasCharger === true ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                name="hasCharger"
+                checked={stepData.HasCharger === true}
+                onChange={() => {
+                  updateStepData('EvChargerInfo', 'HasCharger', true);
+                  updateStepData('EvChargerInfo', 'WantsToBuy', false);
+                }}
+              />
+              <span>Yes, I have one</span>
+            </label>
 
-          <div className="form-grid-three">
-            {stepData.WantsToBuy && (
-              <>
-                <div className="form-group">
-                  <label>Preferred Brand</label>
-                  <select
-                    value={stepData.Brand}
-                    onChange={(e) => updateStepData('EvChargerInfo', 'Brand', e.target.value)}
-                    required
-                  >
-                    <option value="">Select brand</option>
-                    <option value="Tesla">Tesla</option>
-                    <option value="Wallbox">Wallbox</option>
-                    <option value="ChargePoint">ChargePoint</option>
-                    <option value="ABB">ABB</option>
-                    <option value="Schneider">Schneider Electric</option>
-                    <option value="BP Pulse">BP Pulse</option>
-                    <option value="Shell Recharge">Shell Recharge</option>
-                    <option value="Blink">Blink Charging</option>
-                    <option value="Autel">Autel</option>
-                    <option value="Siemens">Siemens</option>
-                    <option value="Eaton">Eaton</option>
-                    <option value="Delta Electronics">Delta Electronics</option>
-                    <option value="Tritium">Tritium</option>
-                    <option value="EVB">EVB (Beny New Energy)</option>
-                    <option value="Qoltec">Qoltec</option>
-                    <option value="Victron Energy">Victron Energy</option>
-                    <option value="Voltech">Voltech</option>
-                    <option value="Enel X">Enel X</option>
-                    <option value="Pod Point">Pod Point</option>
-                    <option value="Electrify America">Electrify America</option>
-                    <option value="EVBox">EVBox</option>
-                    <option value="ClipperCreek">ClipperCreek</option>
-                    <option value="Rolec">Rolec</option>
-                    <option value="Wallenius">Wallenius</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Charger Model</label>
-                  <input
-                    type="text"
-                    value={stepData.Model}
-                    onChange={(e) => updateStepData('EvChargerInfo', 'Model', e.target.value)}
-                    placeholder="Enter charger model"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Charger Power (kW)</label>
-                  <select
-                    value={stepData.PowerKw}
-                    onChange={(e) => updateStepData('EvChargerInfo', 'PowerKw', parseFloat(e.target.value))}
-                    required
-                  >
-                    <option value="0">Select power</option>
-                    <option value="3.7">3.7 kW</option>
-                    <option value="7.4">7.4 kW</option>
-                    <option value="11">11 kW</option>
-                    <option value="22">22 kW</option>
-                  </select>
-                </div>
-              </>
-            )}
+            <label className={`inline-radio ${stepData.HasCharger === false ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                name="hasCharger"
+                checked={stepData.HasCharger === false}
+                onChange={() => {
+                  updateStepData('EvChargerInfo', 'HasCharger', false);
+                  updateStepData('EvChargerInfo', 'EvCharger', {
+                    Brand: '',
+                    Model: '',
+                    PowerKw: 0
+                  });
+                }}
+              />
+              <span>No, I don't</span>
+            </label>
           </div>
         </div>
-      );
+      </div>
+
+      {/* Existing Charger Details - Inline */}
+      {stepData.HasCharger === true && (
+        <div className="inline-form">
+          <div className="form-row">
+            <div className="form-label">
+              <svg className="form-icon" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" fill="#34d399"/>
+                <path d="M8 12L11 15L16 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>Tell us about your current charger:</span>
+            </div>
+            
+            <div className="inline-inputs">
+              <div className="input-group">
+                <label>Brand</label>
+                <select
+                  value={stepData.EvCharger?.Brand || ''}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    Brand: e.target.value
+                  })}
+                  required
+                >
+                  <option value="">Choose brand</option>
+                  <option value="Tesla">Tesla</option>
+                  <option value="Wallbox">Wallbox</option>
+                  <option value="ChargePoint">ChargePoint</option>
+                  <option value="ABB">ABB</option>
+                  <option value="Schneider">Schneider</option>
+                  <option value="Autel">Autel</option>
+                  <option value="Siemens">Siemens</option>
+                  <option value="Eaton">Eaton</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="input-group">
+                <label>Model</label>
+                <input
+                  type="text"
+                  value={stepData.EvCharger?.Model || ''}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    Model: e.target.value
+                  })}
+                  placeholder="e.g. Wall Connector"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Power</label>
+                <select
+                  value={stepData.EvCharger?.PowerKw || 0}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    PowerKw: parseFloat(e.target.value)
+                  })}
+                  required
+                >
+                  <option value="0">Select kW</option>
+                  <option value="3.7">3.7 kW</option>
+                  <option value="7.4">7.4 kW</option>
+                  <option value="11">11 kW</option>
+                  <option value="22">22 kW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Charger Options - Inline */}
+      {stepData.HasCharger === false && (
+        <div className="inline-question">
+          <div className="question-row">
+            <div className="question-label">
+              <svg className="question-icon" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#06b6d4"/>
+                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>What would you like to do?</span>
+            </div>
+            
+            <div className="inline-options">
+              <div 
+                className={`inline-option ${stepData.WantsToBuy ? 'selected' : ''}`}
+                onClick={() => updateStepData('EvChargerInfo', 'WantsToBuy', true)}
+              >
+                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="3" width="20" height="14" rx="2" fill="#f59e0b"/>
+                  <circle cx="8" cy="21" r="2" fill="#f59e0b"/>
+                  <circle cx="16" cy="21" r="2" fill="#f59e0b"/>
+                  <path d="M6 6H22L20 16H8L6 6ZM6 6L4 2H2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Buy a Charger</span>
+              </div>
+
+              <div 
+                className={`inline-option ${!stepData.WantsToBuy ? 'selected' : ''}`}
+                onClick={() => {
+                  updateStepData('EvChargerInfo', 'WantsToBuy', false);
+                  updateStepData('EvChargerInfo', 'EvCharger', {
+                    Brand: '',
+                    Model: '',
+                    PowerKw: 0
+                  });
+                }}
+              >
+                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="3" fill="#8b5cf6"/>
+                  <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Get Recommendations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Details - Inline */}
+      {stepData.HasCharger === false && stepData.WantsToBuy === true && (
+        <div className="inline-form purchase-form">
+          <div className="form-row">
+            <div className="form-label">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ev-station-fill" viewBox="0 0 16 16">
+  <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V9c0-.258-.104-.377-.357-.635l-.007-.008C13.379 8.096 13 7.71 13 7V4a.5.5 0 0 1 .146-.354l.5-.5a.5.5 0 0 1 .708 0l.5.5A.5.5 0 0 1 15 4v8.5a1.5 1.5 0 1 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm2 .5v5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5m2.631 9.96H4.14v-.893h1.403v-.505H4.14v-.855h1.49v-.54H3.485V13h2.146zm1.316.54h.794l1.106-3.333h-.733l-.74 2.615h-.031l-.747-2.615h-.764z"/>
+</svg>
+              <span>Select your preferred charger:</span>
+            </div>
+            
+            <div className="inline-inputs">
+              <div className="input-group">
+                <label>Brand</label>
+                <select
+                  value={stepData.EvCharger?.Brand || ''}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    Brand: e.target.value
+                  })}
+                  required
+                >
+                  <option value="">Choose brand</option>
+                  <option value="Tesla">Tesla</option>
+                  <option value="Wallbox">Wallbox</option>
+                  <option value="ChargePoint">ChargePoint</option>
+                  <option value="ABB">ABB</option>
+                  <option value="Schneider">Schneider</option>
+                  <option value="Autel">Autel</option>
+                  <option value="Siemens">Siemens</option>
+                  <option value="Eaton">Eaton</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="input-group">
+                <label>Model</label>
+                <input
+                  type="text"
+                  value={stepData.EvCharger?.Model || ''}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    Model: e.target.value
+                  })}
+                  placeholder="Preferred model"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Power</label>
+                <select
+                  value={stepData.EvCharger?.PowerKw || 0}
+                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
+                    ...stepData.EvCharger,
+                    PowerKw: parseFloat(e.target.value)
+                  })}
+                  required
+                >
+                  <option value="0">Select kW</option>
+                  <option value="3.7">3.7 kW</option>
+                  <option value="7.4">7.4 kW</option>
+                  <option value="11">11 kW</option>
+                  <option value="22">22 kW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations Info - Inline */}
+      {stepData.HasCharger === false && stepData.WantsToBuy === false && (
+        <div className="inline-info">
+          <div className="info-row">
+            <svg className="info-icon" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" fill="#06d6a0"/>
+              <path d="M12 6V12L16 14" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span><strong>Perfect!</strong> We'll provide personalized charger recommendations based on your assessment.</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
       default:
         return <div>Unknown step</div>;
@@ -1202,15 +1489,25 @@ function App() {
         return stepData.Location && stepData.DistanceFromPanelMeters >= 0;
       case 'HomeInfo':
         return stepData.Address.Country && stepData.Address.City && stepData.Address.Street && stepData.Address.StreetNumber && stepData.Address.PostalCode && stepData.NumberOfHighEnergyDevices >= 0;
-      case 'EvChargerInfo':
-        // If user doesn't want to buy, step is valid
-        if (stepData.WantsToBuy === false) return true;
-        // If user wants to buy, all three fields are required
-        if (stepData.WantsToBuy === true) {
-          return stepData.Brand && stepData.Model && stepData.PowerKw > 0;
-        }
-        // If WantsToBuy is null/undefined, step is not valid
-        return false;
+       case 'EvChargerInfo':
+          // Ako ima punjač, sva tri polja su obavezna
+          if (stepData.HasCharger === true) {
+            return stepData.EvCharger?.Brand && 
+                  stepData.EvCharger?.Model && 
+                  stepData.EvCharger?.PowerKw > 0;
+          }
+          // Ako nema punjač
+          if (stepData.HasCharger === false) {
+            // Ako želi da kupi, sva tri polja su obavezna
+            if (stepData.WantsToBuy === true) {
+              return stepData.EvCharger?.Brand && 
+                    stepData.EvCharger?.Model && 
+                    stepData.EvCharger?.PowerKw > 0;
+            }
+            // Ako ne želi da kupi (želi preporuke), to je validno
+            return stepData.WantsToBuy === false;
+          }
+    return false;
       default:
         return true;
     }

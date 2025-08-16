@@ -1194,3 +1194,477 @@ select.error:focus {
     min-width: unset;
   }
 }
+
+
+
+.ev-charger-step {
+  max-width: 100%;
+}
+
+.inline-question,
+.inline-form,
+.inline-info {
+  background-image: url('https://media.istockphoto.com/id/2150124233/vector/pastel-green-mint-abstract-background.jpg?s=612x612&w=0&k=20&c=ilO6LtoBkMm5riOfwWKc_IJ6H9TviDKUcubr55C0Od4=');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.9;
+  backdrop-filter: blur(15px);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+  position: relative;
+}
+
+.inline-question::before,
+.inline-form::before,
+.inline-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  z-index: 1;
+}
+
+.inline-question > *,
+.inline-form > *,
+.inline-info > * {
+  position: relative;
+  z-index: 2;
+}
+
+.inline-question:hover::before,
+.inline-form:hover::before,
+.inline-info:hover::before {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.inline-question:hover,
+.inline-form:hover,
+.inline-info:hover {
+  border-color: #059669;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+}
+
+.purchase-form::before {
+  background: rgba(236, 253, 245, 0.8);
+}
+
+.purchase-form:hover::before {
+  background: rgba(236, 253, 245, 0.9);
+}
+
+.purchase-form:hover {
+  border-color: #10b981;
+}
+
+
+.question-row,
+.form-row,
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+
+.question-label,
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: #065f46;
+  white-space: nowrap;
+  min-width: 260px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.question-icon,
+.form-icon,
+.info-icon {
+  width: 22px;
+  height: 22px;
+  color: #10b981;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.inline-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.inline-inputs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: nowrap;
+  align-items: flex-start; /* Promenio sa center na flex-start */
+}
+
+/* KLJUČNA IZMENA - Input grupa sa labelom IZNAD input polja */
+.input-group {
+  display: flex;
+  flex-direction: column; /* Dodao flex-direction: column */
+  gap: 6px; /* Gap između labela i input polja */
+  white-space: nowrap;
+  align-items: flex-start; /* Dodao alignment */
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #047857;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.input-group input,
+.input-group select {
+  padding: 8px 12px;
+  border: 2px solid #d1fae5;
+  border-radius: 6px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+  min-width: 120px;
+  width: 100%; /* Dodao width 100% da input zauzme punu širinu grupe */
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  background: rgba(255, 255, 255, 1);
+}
+
+.inline-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #d1fae5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.inline-radio:hover {
+  border-color: #10b981;
+  background: rgba(236, 253, 245, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.inline-radio.selected {
+  border-color: #059669;
+  background: rgba(236, 253, 245, 0.95);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+.inline-radio input[type="radio"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #10b981;
+}
+
+.radio-icon {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.inline-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #d1fae5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.inline-option:hover {
+  border-color: #10b981;
+  background: rgba(236, 253, 245, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+}
+
+.inline-option.selected {
+  border-color: #059669;
+  background: rgba(236, 253, 245, 0.95);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.option-icon {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.info-row {
+  color: #065f46;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.info-row strong {
+  font-weight: 700;
+  color: #047857;
+}
+
+
+.step-circle.active {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .ev-charger-step {
+    padding: 16px;
+    background-attachment: local;
+  }
+  
+  .question-row,
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .question-label,
+  .form-label {
+    min-width: unset;
+    font-size: 14px;
+  }
+  
+  .inline-options,
+  .inline-inputs {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .input-group {
+    min-width: 110px;
+    flex: 1;
+  }
+  
+  .inline-question,
+  .inline-form,
+  .inline-info {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .inline-inputs {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .input-group {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  .inline-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .inline-option,
+  .inline-radio {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/*OVO JE SWEETALERT2 ZA NEKOG KO NIJE LOGOVAN*/
+/* Dodaj u App.css */
+
+.assessment-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.loading-content {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 150px;
+}
+
+.auth-message {
+  background-image: url('https://img.freepik.com/free-vector/green-geometric-frame-vector_53876-144367.jpg?semt=ais_hybrid&w=740&q=80');
+  border: 3px solid #10b943;
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(10px);
+}
+
+.lock-icon-large {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.lock-icon-large svg {
+  width: 48px;
+  height: 48px;
+}
+
+.auth-message h2 {
+  color: #065f46;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.auth-message p {
+  color: #4b5563;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.auth-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retry-auth-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+  min-width: 160px;
+}
+
+.retry-auth-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.4);
+}
+
+.go-home-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #6b7280;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 160px;
+}
+
+.go-home-btn:hover {
+  background: #f9fafb;
+  color: #4b5563;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .assessment-loading {
+    padding: 1rem;
+  }
+  
+  .auth-message {
+    padding: 2rem 1.5rem;
+  }
+  
+  .auth-message h2 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-message p {
+    font-size: 1rem;
+  }
+  
+  .auth-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .retry-auth-btn,
+  .go-home-btn {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Animacija za loading */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-message {
+  animation: fadeInUp 0.6s ease-out;
+}
+/*OVO JE SWEETALERT2 ZA NEKOG KO NIJE LOGOVAN*/
+
+

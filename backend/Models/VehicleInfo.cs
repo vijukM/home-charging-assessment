@@ -4,7 +4,7 @@ namespace home_charging_assessment.Models
 {
     public class VehicleInfo
     {
-        [JsonPropertyName("manufacturer")]
+        [JsonPropertyName("brand")]
         public string? Brand     { get; set; }
 
         [JsonPropertyName("model")]
