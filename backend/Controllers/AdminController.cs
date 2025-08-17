@@ -8,7 +8,7 @@ namespace home_charging_assessment.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = UserRoles.Admin)]
+    [Authorize(Policy = "Admin")]
     public class AdminController : ControllerBase
     {
         private readonly IAuthService _authService;

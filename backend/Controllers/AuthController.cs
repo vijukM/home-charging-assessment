@@ -59,6 +59,7 @@ namespace home_charging_assessment.Controllers
         }
 
         [HttpPost("register-admin")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto registerDto, [FromQuery] string adminSecret)
         {
             var configSecret = _configuration["AdminCreationSecret"];

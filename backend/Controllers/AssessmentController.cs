@@ -7,7 +7,8 @@ namespace home_charging_assessment.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Requires authentication
+    [Authorize(Policy = "UserOrAdmin")]  
+
     public class AssessmentController : ControllerBase
     {
         private readonly IAssessmentService _service;

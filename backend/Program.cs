@@ -75,9 +75,8 @@ builder.Services.AddAuthentication(options =>
 // Add Authorization with policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole(UserRoles.Admin));
-    options.AddPolicy("UserOrAdmin", policy =>
-        policy.RequireRole(UserRoles.User, UserRoles.Admin));
+    options.AddPolicy("Admin", policy => policy.RequireRole(UserRoles.Admin));
+    options.AddPolicy("UserOrAdmin", policy => policy.RequireRole(UserRoles.User, UserRoles.Admin));
 });
 
 // Cosmos DB setup
@@ -103,6 +102,7 @@ builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChargerLocationRepository, ChargerLocationRepository>();
 builder.Services.AddScoped<IPanelLocationRepository, PanelLocationRepository>();
+builder.Services.AddScoped<IEvChargerRepository, EvChargerRepository>();
 
 // Register services
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
@@ -110,6 +110,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IChargerLocationService, ChargerLocationService>();
 builder.Services.AddScoped<IPanelLocationService, PanelLocationService>();
+builder.Services.AddScoped<IEvChargerService, EvChargerService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -129,6 +130,8 @@ using (var scope = app.Services.CreateScope())
 {
     await ChargerLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "chargerLocation", "/id");
     await PanelLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "panelLocation", "/id");
+    await EvChargerInitializer.InitializeAsync(cosmosClient, "TestDb", "evCharger", "/id"); 
+
 }
 
 if (app.Environment.IsDevelopment())

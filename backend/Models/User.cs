@@ -36,7 +36,7 @@ namespace home_charging_assessment.Models
         public DateTime? PasswordResetTokenExpiry { get; set; }
 
         [JsonProperty("roles")]
-        public List<string> Roles { get; set; } = new List<string> { UserRoles.User };
+        public List<string> Roles { get; set; } = new List<string>();
 
         [JsonProperty("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

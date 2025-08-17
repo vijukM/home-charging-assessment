@@ -8,7 +8,6 @@ import assessmentService from './services/assessmentService';
 import authService from './services/authService';
 import Swal from 'sweetalert2';
 
-
 const phoneRegex = /\d{10,15}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,6 +67,10 @@ function App() {
   // DODANO - State za auth proveravanja
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
+
+  // NOVO - State za EvCharger podatke
+  const [evChargers, setEvChargers] = useState([]);
+  const [evChargerLoading, setEvChargerLoading] = useState(false);
 
   // Jednostavan način - koristi samo najvažnije gradove
   const loadCitiesForCountry = (countryName) => {
@@ -132,7 +135,28 @@ function App() {
   const [countries, setCountries] = useState([]);
   const [cities, setCities] = useState([]);
 
-  
+  // NOVO - Helper funkcije za EvCharger
+  const getUniqueEvBrands = () => {
+    const brands = evChargers.map(charger => charger.brand);
+    return [...new Set(brands)].sort();
+  };
+
+  const getUniqueModelsForBrand = (selectedBrand) => {
+    const models = evChargers
+      .filter(charger => charger.brand === selectedBrand)
+      .map(charger => charger.model);
+    return [...new Set(models)].sort();
+  };
+
+  const getPowerOptionsForModel = (selectedBrand, selectedModel) => {
+    const chargers = evChargers.filter(
+      c => c.brand === selectedBrand && c.model === selectedModel
+    );
+    
+    // Izdvojiti jedinstvene snage i sortirati ih
+    const powers = [...new Set(chargers.map(c => c.powerKw))].sort((a, b) => a - b);
+    return powers;
+  };
 
   // Funkcije za validaciju
   const validatePhone = (phone) => {
@@ -171,6 +195,29 @@ function App() {
       }));
     }
   };
+
+  // NOVO - useEffect za učitavanje EvCharger podataka
+  useEffect(() => {
+    const loadEvChargers = async () => {
+      setEvChargerLoading(true);
+      try {
+        const response = await fetch('http://localhost:5092/api/EvCharger');
+        if (!response.ok) {
+          throw new Error('Failed to fetch EvChargers');
+        }
+        const data = await response.json();
+        setEvChargers(data);
+      } catch (error) {
+        console.error('Error loading EvChargers:', error);
+        // Fallback na praznu listu ako API ne radi
+        setEvChargers([]);
+      } finally {
+        setEvChargerLoading(false);
+      }
+    };
+
+    loadEvChargers();
+  }, []);
 
   // Zameni postojeće useEffect hook-ove sa ovim ispravkama:
   useEffect(() => {
@@ -521,7 +568,6 @@ function App() {
             return stepData.WantsToBuy === false;
           }
     return false;
-
 
       default:
         return false;
@@ -1206,6 +1252,13 @@ if (!isAuthenticated) {
     );
 
 case 'EvChargerInfo':
+  const uniqueBrands = getUniqueEvBrands();
+  const uniqueModelsForBrand = getUniqueModelsForBrand(stepData.EvCharger?.Brand || '');
+  const powerOptionsForModel = getPowerOptionsForModel(
+    stepData.EvCharger?.Brand || '', 
+    stepData.EvCharger?.Model || ''
+  );
+
   return (
     <div className="step-form ev-charger-step">
       <StepHeader title={step.title} image={step.image} />
@@ -1270,56 +1323,76 @@ case 'EvChargerInfo':
             <div className="inline-inputs">
               <div className="input-group">
                 <label>Brand</label>
-                <select
-                  value={stepData.EvCharger?.Brand || ''}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    Brand: e.target.value
-                  })}
-                  required
-                >
-                  <option value="">Choose brand</option>
-                  <option value="Tesla">Tesla</option>
-                  <option value="Wallbox">Wallbox</option>
-                  <option value="ChargePoint">ChargePoint</option>
-                  <option value="ABB">ABB</option>
-                  <option value="Schneider">Schneider</option>
-                  <option value="Autel">Autel</option>
-                  <option value="Siemens">Siemens</option>
-                  <option value="Eaton">Eaton</option>
-                  <option value="Other">Other</option>
-                </select>
+                {evChargerLoading ? (
+                  <select disabled>
+                    <option>Loading brands...</option>
+                  </select>
+                ) : (
+                  <select
+                    value={stepData.EvCharger?.Brand || ''}
+                    onChange={(e) => {
+                      const selectedBrand = e.target.value;
+                      updateStepData('EvChargerInfo', 'EvCharger', {
+                        Brand: selectedBrand,
+                        Model: '', // Reset model when brand changes
+                        PowerKw: 0 // Reset power when brand changes
+                      });
+                    }}
+                    required
+                  >
+                    <option value="">Choose brand</option>
+                    {uniqueBrands.map((brand, index) => (
+                      <option key={index} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="input-group">
                 <label>Model</label>
-                <input
-                  type="text"
+                <select
                   value={stepData.EvCharger?.Model || ''}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    Model: e.target.value
-                  })}
-                  placeholder="e.g. Wall Connector"
+                  onChange={(e) => {
+                    const selectedModel = e.target.value;
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      Model: selectedModel,
+                      PowerKw: 0 // Reset power when model changes
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Brand || evChargerLoading}
                   required
-                />
+                >
+                  <option value="">Choose model</option>
+                  {uniqueModelsForBrand.map((model, index) => (
+                    <option key={index} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="input-group">
                 <label>Power</label>
                 <select
                   value={stepData.EvCharger?.PowerKw || 0}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    PowerKw: parseFloat(e.target.value)
-                  })}
+                  onChange={(e) => {
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      PowerKw: parseFloat(e.target.value)
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Model || evChargerLoading}
                   required
                 >
-                  <option value="0">Select kW</option>
-                  <option value="3.7">3.7 kW</option>
-                  <option value="7.4">7.4 kW</option>
-                  <option value="11">11 kW</option>
-                  <option value="22">22 kW</option>
+                  <option value="0">Select power</option>
+                  {powerOptionsForModel.map((power, index) => (
+                    <option key={index} value={power}>
+                      {power} kW
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1380,65 +1453,85 @@ case 'EvChargerInfo':
         <div className="inline-form purchase-form">
           <div className="form-row">
             <div className="form-label">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ev-station-fill" viewBox="0 0 16 16">
-  <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V9c0-.258-.104-.377-.357-.635l-.007-.008C13.379 8.096 13 7.71 13 7V4a.5.5 0 0 1 .146-.354l.5-.5a.5.5 0 0 1 .708 0l.5.5A.5.5 0 0 1 15 4v8.5a1.5 1.5 0 1 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm2 .5v5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5m2.631 9.96H4.14v-.893h1.403v-.505H4.14v-.855h1.49v-.54H3.485V13h2.146zm1.316.54h.794l1.106-3.333h-.733l-.74 2.615h-.031l-.747-2.615h-.764z"/>
-</svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-ev-station-fill" viewBox="0 0 16 16">
+                <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V9c0-.258-.104-.377-.357-.635l-.007-.008C13.379 8.096 13 7.71 13 7V4a.5.5 0 0 1 .146-.354l.5-.5a.5.5 0 0 1 .708 0l.5.5A.5.5 0 0 1 15 4v8.5a1.5 1.5 0 1 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm2 .5v5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5m2.631 9.96H4.14v-.893h1.403v-.505H4.14v-.855h1.49v-.54H3.485V13h2.146zm1.316.54h.794l1.106-3.333h-.733l-.74 2.615h-.031l-.747-2.615h-.764z"/>
+              </svg>
               <span>Select your preferred charger:</span>
             </div>
             
             <div className="inline-inputs">
               <div className="input-group">
                 <label>Brand</label>
-                <select
-                  value={stepData.EvCharger?.Brand || ''}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    Brand: e.target.value
-                  })}
-                  required
-                >
-                  <option value="">Choose brand</option>
-                  <option value="Tesla">Tesla</option>
-                  <option value="Wallbox">Wallbox</option>
-                  <option value="ChargePoint">ChargePoint</option>
-                  <option value="ABB">ABB</option>
-                  <option value="Schneider">Schneider</option>
-                  <option value="Autel">Autel</option>
-                  <option value="Siemens">Siemens</option>
-                  <option value="Eaton">Eaton</option>
-                  <option value="Other">Other</option>
-                </select>
+                {evChargerLoading ? (
+                  <select disabled>
+                    <option>Loading brands...</option>
+                  </select>
+                ) : (
+                  <select
+                    value={stepData.EvCharger?.Brand || ''}
+                    onChange={(e) => {
+                      const selectedBrand = e.target.value;
+                      updateStepData('EvChargerInfo', 'EvCharger', {
+                        Brand: selectedBrand,
+                        Model: '', // Reset model when brand changes
+                        PowerKw: 0 // Reset power when brand changes
+                      });
+                    }}
+                    required
+                  >
+                    <option value="">Choose brand</option>
+                    {uniqueBrands.map((brand, index) => (
+                      <option key={index} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="input-group">
                 <label>Model</label>
-                <input
-                  type="text"
+                <select
                   value={stepData.EvCharger?.Model || ''}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    Model: e.target.value
-                  })}
-                  placeholder="Preferred model"
+                  onChange={(e) => {
+                    const selectedModel = e.target.value;
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      Model: selectedModel,
+                      PowerKw: 0 // Reset power when model changes
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Brand || evChargerLoading}
                   required
-                />
+                >
+                  <option value="">Choose model</option>
+                  {uniqueModelsForBrand.map((model, index) => (
+                    <option key={index} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="input-group">
                 <label>Power</label>
                 <select
                   value={stepData.EvCharger?.PowerKw || 0}
-                  onChange={(e) => updateStepData('EvChargerInfo', 'EvCharger', {
-                    ...stepData.EvCharger,
-                    PowerKw: parseFloat(e.target.value)
-                  })}
+                  onChange={(e) => {
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      PowerKw: parseFloat(e.target.value)
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Model || evChargerLoading}
                   required
                 >
-                  <option value="0">Select kW</option>
-                  <option value="3.7">3.7 kW</option>
-                  <option value="7.4">7.4 kW</option>
-                  <option value="11">11 kW</option>
-                  <option value="22">22 kW</option>
+                  <option value="0">Select power</option>
+                  {powerOptionsForModel.map((power, index) => (
+                    <option key={index} value={power}>
+                      {power} kW
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
