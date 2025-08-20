@@ -1,0 +1,141 @@
+/* AdminPlaceholders.css */
+
+.admin-placeholder {
+  padding: 40px;
+  background: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.placeholder-header i {
+  font-size: 4rem;
+  color: #3b82f6;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.placeholder-header h1 {
+  font-size: 2.5rem;
+  color: #1f2937;
+  margin: 0;
+  font-weight: 700;
+}
+
+.placeholder-content {
+  max-width: 600px;
+  width: 100%;
+}
+
+.placeholder-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.placeholder-card h3 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+}
+
+.placeholder-card p {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.placeholder-card ul {
+  text-align: left;
+  color: #4b5563;
+  margin: 20px 0;
+  padding-left: 20px;
+}
+
+.placeholder-card li {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.placeholder-note {
+  background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 30px;
+  color: #1e40af !important;
+  font-weight: 500 !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.placeholder-note i {
+  color: #3b82f6;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .admin-placeholder {
+    padding: 20px;
+  }
+  
+  .placeholder-header h1 {
+    font-size: 2rem;
+  }
+  
+  .placeholder-header i {
+    font-size: 3rem;
+  }
+  
+  .placeholder-card {
+    padding: 30px 20px;
+  }
+  
+  .placeholder-card h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Animation for better UX */
+.admin-placeholder {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.placeholder-header i {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}

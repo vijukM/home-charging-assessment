@@ -19,7 +19,6 @@ namespace home_charging_assessment.RepositoryInterfaces
         Task<int> GetAssessmentCountAsync();
         Task<List<Assessment>> GetCompletedAssessmentsAsync();
         Task<List<Assessment>> GetIncompleteAssessmentsAsync();
-        Task<List<Assessment>> GetAbandonedAssessmentsAsync();
 
     }
 }

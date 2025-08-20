@@ -130,7 +130,8 @@ using (var scope = app.Services.CreateScope())
 {
     await ChargerLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "chargerLocation", "/id");
     await PanelLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "panelLocation", "/id");
-    await EvChargerInitializer.InitializeAsync(cosmosClient, "TestDb", "evCharger", "/id"); 
+    await EvChargerInitializer.InitializeAsync(cosmosClient, "TestDb", "evCharger", "/id");
+    await AssessmentInitializer.InitializeAsync(cosmosClient, "TestDb", "assessments", "/customerId");
 
 }
 

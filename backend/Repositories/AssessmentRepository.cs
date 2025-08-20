@@ -86,7 +86,7 @@ namespace home_charging_assessment.Repositories
         }
 
         /// <summary>
-        /// Get assessments by status (completed, incomplete, abandoned)
+        /// Get assessments by status (completed, incomplete)
         /// </summary>
         public async Task<List<Assessment>> GetAssessmentsByStatusAsync(string status)
         {
@@ -94,7 +94,6 @@ namespace home_charging_assessment.Repositories
             {
                 "completed" => "SELECT * FROM c WHERE c.isComplete = true ORDER BY c._ts DESC",
                 "incomplete" => "SELECT * FROM c WHERE c.isComplete = false AND c.currentPage > 0 ORDER BY c._ts DESC",
-                "abandoned" => "SELECT * FROM c WHERE c.isComplete = false AND c.currentPage = 0 ORDER BY c._ts DESC",
                 _ => "SELECT * FROM c ORDER BY c._ts DESC"
             };
 
@@ -146,15 +145,6 @@ namespace home_charging_assessment.Repositories
             return await ExecuteQueryAsync<Assessment>(query);
         }
 
-        /// <summary>
-        /// Get abandoned assessments (started but never progressed)
-        /// </summary>
-        public async Task<List<Assessment>> GetAbandonedAssessmentsAsync()
-        {
-            var query = "SELECT * FROM c WHERE c.isComplete = false AND c.currentPage = 0";
-            return await ExecuteQueryAsync<Assessment>(query);
-        }
-
         // ADDITIONAL HELPER METHODS FOR BETTER PERFORMANCE
 
         /// <summary>
@@ -202,8 +192,7 @@ namespace home_charging_assessment.Repositories
             {
                 ["total"] = "SELECT VALUE COUNT(1) FROM c",
                 ["completed"] = "SELECT VALUE COUNT(1) FROM c WHERE c.isComplete = true",
-                ["incomplete"] = "SELECT VALUE COUNT(1) FROM c WHERE c.isComplete = false AND c.currentPage > 0",
-                ["abandoned"] = "SELECT VALUE COUNT(1) FROM c WHERE c.isComplete = false AND c.currentPage = 0"
+                ["incomplete"] = "SELECT VALUE COUNT(1) FROM c WHERE c.isComplete = false AND c.currentPage > 0"
             };
 
             var results = new Dictionary<string, int>();

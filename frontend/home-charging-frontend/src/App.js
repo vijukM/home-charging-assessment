@@ -9,6 +9,8 @@ import Assessment from "./Assesstment.js";
 import AuthModal from './components/AuthModal';
 import EmailVerification from './components/EmailVerification';
 import PasswordReset from './components/PasswordReset';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoutes from './routes/AdminRoutes';
 import authService from './services/authService';
 
 function Home() {
@@ -229,10 +231,43 @@ export default function App() {
     <Router>
       <Navbar />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/assessment" element={<Assessment />} />
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/reset-password" element={<PasswordReset />} />
+        
+        {/* Protected Assessment Route */}
+        <Route 
+          path="/assessment" 
+          element={
+            <ProtectedRoute>
+              <Assessment />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Admin Routes - Protected and require Admin role */}
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedRoute requiredRole="Admin">
+              <AdminRoutes />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* User Routes - Add other protected user routes here */}
+        {/* Example:
+        <Route 
+          path="/my-assessments" 
+          element={
+            <ProtectedRoute>
+              <MyAssessments />
+            </ProtectedRoute>
+          } 
+        />
+        */}
+        
       </Routes>
       <Footer />
     </Router>

@@ -30,7 +30,12 @@ namespace home_charging_assessment.Models.DTOs
         public string SortBy { get; set; } = "CreatedAt";
         public string SortOrder { get; set; } = "desc"; // "asc" or "desc"
     }
-
+    public class TopEvChargerBrandDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public double Percentage { get; set; }
+    }
     // Assessment statistics
     public class AssessmentStats
     {
@@ -42,12 +47,13 @@ namespace home_charging_assessment.Models.DTOs
         public double AverageCompletionTimeMinutes { get; set; }
         public List<TopCityDto> TopCities { get; set; } = new List<TopCityDto>();
         public List<TopVehicleBrandDto> TopVehicleBrands { get; set; } = new List<TopVehicleBrandDto>();
+        public List<TopEvChargerBrandDto> TopEvChargerBrands { get; set; } = new List<TopEvChargerBrandDto>();
+        public List<TopEvChargerBrandDto> TopExistingEvChargerBrands { get; set; } = new List<TopEvChargerBrandDto>();
     }
 
     // Drop-off analysis data
     public class DropOffAnalysis
     {
-        public int Page0 { get; set; } // Started but never progressed
         public int Page1 { get; set; } // Dropped at Personal Info
         public int Page2 { get; set; } // Dropped at Vehicle Info
         public int Page3 { get; set; } // Dropped at Electrical Panel
@@ -57,7 +63,6 @@ namespace home_charging_assessment.Models.DTOs
 
         public List<DropOffPageDto> PageBreakdown => new()
         {
-            new DropOffPageDto { PageNumber = 0, PageName = "Started", Count = Page0 },
             new DropOffPageDto { PageNumber = 1, PageName = "Personal Info", Count = Page1 },
             new DropOffPageDto { PageNumber = 2, PageName = "Vehicle Info", Count = Page2 },
             new DropOffPageDto { PageNumber = 3, PageName = "Electrical Panel", Count = Page3 },
@@ -75,8 +80,20 @@ namespace home_charging_assessment.Models.DTOs
         public VehicleBrandsChartDto VehicleBrands { get; set; } = new();
         public CitiesDistributionDto CitiesDistribution { get; set; } = new();
         public MonthlyStatsDto MonthlyStats { get; set; } = new();
-    }
+        public EvChargerDistributionDto EvChargerDistribution { get; set; } = new(); 
 
+    }
+    public class EvChargerDistributionDto
+    {
+        public List<string> Labels { get; set; } = new() { "Already Have", "Want to Buy", "Don't Want" };
+        public List<int> Data { get; set; } = new();
+        public List<string> BackgroundColors { get; set; } = new()
+    {
+        "#22c55e", // Green for "Already Have"
+        "#3b82f6", // Blue for "Want to Buy"  
+        "#ef4444"  // Red for "Don't Want"
+    };
+    }   
     // Supporting DTOs
     public class TopCityDto
     {

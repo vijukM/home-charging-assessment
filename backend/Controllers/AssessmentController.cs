@@ -53,16 +53,11 @@ namespace home_charging_assessment.Controllers
         {
             var userId = User.FindFirst("userId")?.Value;
             var isAdmin = User.IsInRole(UserRoles.Admin);
-
-            // Allow update if user owns the assessment OR is an admin
-            if (!isAdmin && userId != partitionKey)
-            {
-                return Forbid();
-            }
-
+            if (!isAdmin && userId != partitionKey)    return Forbid();
+            
             var existing = await _service.GetAsync(id, partitionKey);
-            if (existing == null)
-                return NotFound();
+
+            if (existing == null)   return NotFound();
 
             var result = await _service.UpdateAsync(id, partitionKey, updated);
             return Ok(result);

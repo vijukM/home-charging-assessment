@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import authService from '../services/authService';
+import './AuthModal.css';
 
 const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -29,6 +30,11 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
     setLoginForm({ username: '', password: '' });
     setSignupForm({ username: '', email: '', password: '', confirmPassword: '' });
     setForgotPasswordForm({ email: '' });
+    setMessage('');
+    setMessageType('');
+  };
+
+  const closeMessage = () => {
     setMessage('');
     setMessageType('');
   };
@@ -116,7 +122,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
       setTimeout(() => {
         resetForms();
         setIsSignUp(false);
-      }, 2000);
+      }, 4000);
       
     } catch (error) {
       setMessage(error.message || 'Registration failed');
@@ -139,7 +145,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
       setTimeout(() => {
         setShowForgotPassword(false);
         switchToLogin();
-      }, 2000);
+      }, 4000);
       
     } catch (error) {
       setMessage(error.message || 'Failed to send reset email');
@@ -152,155 +158,159 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={closeModal}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={closeModal} disabled={isLoading}>
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
-
-        {/* Message Display */}
-        {message && (
+    <>
+      {/* Independent Message Display - positioned above modal */}
+      {message && (
+        <div className="auth-message-overlay">
           <div className={`auth-message ${messageType}`}>
-            {message}
+            <span className="auth-message-text">{message}</span>
+            <button className="auth-message-close" onClick={closeMessage}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M18 6L6 18M6 6L18 18"/>
+              </svg>
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {showForgotPassword ? (
-          // Forgot Password Form
-          <div className="auth-form">
-            <h2>Reset Password</h2>
-            <form onSubmit={handleForgotPassword}>
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={forgotPasswordForm.email}
-                  onChange={(e) => setForgotPasswordForm({...forgotPasswordForm, email: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <button type="submit" className="auth-button" disabled={isLoading}>
-                {isLoading ? 'Sending...' : 'Send Reset Email'}
-              </button>
-            </form>
-            <p className="auth-switch">
-              Remember your password?
-              <button onClick={switchToLogin} className="switch-button" disabled={isLoading}>
-                Back to Login
-              </button>
-            </p>
-          </div>
-        ) : !isSignUp ? (
-          // Login Form
-          <div className="auth-form">
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  placeholder="Enter your username"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  placeholder="Enter your password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <button type="submit" className="auth-button" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
-              </button>
-            </form>
-            <p className="auth-switch">
-              Don't have an account?
-              <button onClick={switchToSignUp} className="switch-button" disabled={isLoading}>
-                Sign Up
-              </button>
-            </p>
-            <p className="auth-switch">
-              <button onClick={switchToForgotPassword} className="switch-button" disabled={isLoading}>
-                Forgot Password?
-              </button>
-            </p>
-          </div>
-        ) : (
-          // Sign Up Form
-          <div className="auth-form">
-            <h2>Sign Up</h2>
-            <form onSubmit={handleSignUp}>
-              <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  placeholder="Choose a username"
-                  value={signupForm.username}
-                  onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={signupForm.email}
-                  onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  placeholder="Create a password (min 6 characters)"
-                  value={signupForm.password}
-                  onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-                  required
-                  minLength="6"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="form-group">
-                <label>Confirm Password</label>
-                <input
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={signupForm.confirmPassword}
-                  onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <button type="submit" className="auth-button" disabled={isLoading}>
-                {isLoading ? 'Creating Account...' : 'Sign Up'}
-              </button>
-            </form>
-            <p className="auth-switch">
-              Already have an account?
-              <button onClick={switchToLogin} className="switch-button" disabled={isLoading}>
-                Login
-              </button>
-            </p>
-          </div>
-        )}
+      {/* Modal */}
+      <div className="modal-overlayy" onClick={closeModal}>
+        <div className="modal-contentt" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-closee" onClick={closeModal} disabled={isLoading}>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+
+          {showForgotPassword ? (
+            // Forgot Password Form
+            <div className="auth-form">
+              <h2>Reset Password</h2>
+              <form onSubmit={handleForgotPassword}>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={forgotPasswordForm.email}
+                    onChange={(e) => setForgotPasswordForm({...forgotPasswordForm, email: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <button type="submit" className="auth-button" disabled={isLoading}>
+                  {isLoading ? 'Sending...' : 'Send Reset Email'}
+                </button>
+              </form>
+              <p className="auth-switch">
+                Remember your password?
+                <button onClick={switchToLogin} className="switch-button" disabled={isLoading}>
+                  Back to Login
+                </button>
+              </p>
+            </div>
+          ) : !isSignUp ? (
+            // Login Form
+            <div className="auth-form">
+              <h2>Login</h2>
+              <form onSubmit={handleLogin}>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <button type="submit" className="auth-button" disabled={isLoading}>
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </button>
+              </form>
+              <p className="auth-switch">
+                Don't have an account?
+                <button onClick={switchToSignUp} className="switch-button" disabled={isLoading}>
+                  Sign Up
+                </button>
+              </p>
+              <p className="auth-switch">
+                <button onClick={switchToForgotPassword} className="switch-button" disabled={isLoading}>
+                  Forgot Password?
+                </button>
+              </p>
+            </div>
+          ) : (
+            // Sign Up Form
+            <div className="auth-form">
+              <h2>Sign Up</h2>
+              <form onSubmit={handleSignUp}>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={signupForm.username}
+                    onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={signupForm.email}
+                    onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="password"
+                    placeholder="Password (min 6 characters)"
+                    value={signupForm.password}
+                    onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
+                    required
+                    minLength="6"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={signupForm.confirmPassword}
+                    onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <button type="submit" className="auth-button" disabled={isLoading}>
+                  {isLoading ? 'Creating Account...' : 'Sign Up'}
+                </button>
+              </form>
+              <p className="auth-switch">
+                Already have an account?
+                <button onClick={switchToLogin} className="switch-button" disabled={isLoading}>
+                  Login
+                </button>
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

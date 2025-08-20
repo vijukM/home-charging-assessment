@@ -8,7 +8,6 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
   min-height: 100vh;
-  margin-top: 70px;    /*OVO MORA ZBOG NAVBARA*/
   padding: 20px;
   background-image: url("https://static6.depositphotos.com/1020310/637/i/450/depositphotos_6378631-stock-photo-green-background-with-copy-space.jpg");
   background-size: cover;       /* slika popunjava ceo deo */
@@ -69,26 +68,26 @@
 }
 
 /* ---------- GRID LAYOUT ZA FORMU (2 KOLONE) ---------- */
-.form-grid {
+.form-gridd {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px 20px; /* red-gap column-gap */
   align-items: start;
 }
 
-/* U gridu, standardni form-group više ne treba velikog margin-bottom-a jer grid ima gap */
-.form-grid .form-group {
+/* U gridu, standardni form-groupp više ne treba velikog margin-bottom-a jer grid ima gap */
+.form-gridd .form-groupp {
   margin-bottom: 0;
 }
 
 /* Ako polje treba da zauzme celu širinu (npr. textarea ili radio grupa) */
-.form-grid .full-width {
+.form-gridd .full-width {
   grid-column: 1 / -1;
 }
 
 /* Mobile: jedna kolona */
 @media (max-width: 768px) {
-  .form-grid {
+  .form-gridd {
     grid-template-columns: 1fr;
   }
 
@@ -99,22 +98,22 @@
 }
 
 /* Ako želiš da telefon u grid ćeliji lepo stoji i zauzima celu ćeliju */
-.form-grid .phone-group .phone-input-wrapper {
+.form-gridd .phone-group .phone-input-wrapper {
   max-width: 100%;
 }
 
 /* sitna prilagođavanja da label i input stoje bolje u dva stupca */
-.form-grid .form-group label {
+.form-gridd .form-groupp label {
   margin-bottom: 8px;
   display: block;
 }
 
 /* FORM GROUPS */
-.form-group {
+.form-groupp {
   margin-bottom: 25px;
 }
 
-.form-group label {
+.form-groupp label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
@@ -122,9 +121,9 @@
   font-size: 1.1rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-groupp input,
+.form-groupp select,
+.form-groupp textarea {
   width: 100%;
   padding: 12px 15px;
   border: 2px solid #ddd;
@@ -134,22 +133,22 @@
   background: white;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-groupp input:focus,
+.form-groupp select:focus,
+.form-groupp textarea:focus {
   outline: none;
   border-color: #4CAF50;
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
   background: #fafffe;
 }
 
-.form-group input:hover,
-.form-group select:hover,
-.form-group textarea:hover {
+.form-groupp input:hover,
+.form-groupp select:hover,
+.form-groupp textarea:hover {
   border-color: #81c784;
 }
 
-.form-group small {
+.form-groupp small {
   display: block;
   margin-top: 5px;
   color: #666;
@@ -847,24 +846,24 @@ select.error:focus {
 }
 
 /* Nova klasa za 3 kolone */
-.form-grid-three {
+.form-gridd-three {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px 20px;
   align-items: start;
 }
 
-.form-grid-three .form-group {
+.form-gridd-three .form-groupp {
   margin-bottom: 0;
 }
 
 /* Ako neki element treba da zauzme sve 3 kolone */
-.form-grid-three .full-width {
+.form-gridd-three .full-width {
   grid-column: 1 / -1;
 }
 
 /* Ako neki element treba da zauzme 2 kolone */
-.form-grid-three .two-columns {
+.form-gridd-three .two-columns {
   grid-column: span 2;
 }
 
@@ -1062,7 +1061,7 @@ select.error:focus {
 }
 
 /* Custom Modal Styles (SweetAlert2-like) */
-.modal-overlay {
+.modal-overlayq {
   position: fixed;
   top: 0;
   left: 0;
@@ -1076,7 +1075,7 @@ select.error:focus {
   animation: fadeIn 0.3s ease-out;
 }
 
-.modal-content {
+.modal-contentq {
   background: white;
   border-radius: 15px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
@@ -1087,7 +1086,7 @@ select.error:focus {
   position: relative;
 }
 
-.modal-header {
+.modal-headerq {
   padding: 40px 30px 20px;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -1098,14 +1097,14 @@ select.error:focus {
   justify-content: center;
 }
 
-.modal-header h2 {
+.modal-headerq h2 {
   color: #2c3e50;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 15px;
 }
 
-.modal-header p {
+.modal-headerq p {
   color: #7f8c8d;
   font-size: 1.1rem;
   line-height: 1.6;
@@ -1128,7 +1127,11 @@ select.error:focus {
   display: flex;
   gap: 15px;
   justify-content: center;
+  /*
   flex-wrap: wrap;
+  */
+    flex-wrap: nowrap; /* Sprečava prelom dugmadi u novi red */
+
 }
 
 .modal-btn {
@@ -1171,16 +1174,16 @@ select.error:focus {
 
 /* Mobile responsiveness for modal */
 @media (max-width: 768px) {
-  .modal-content {
+  .modal-contentq {
     margin: 20px;
     width: calc(100% - 40px);
   }
   
-  .modal-header {
+  .modal-headerq {
     padding: 30px 20px 15px;
   }
   
-  .modal-header h2 {
+  .modal-headerq h2 {
     font-size: 1.7rem;
   }
   

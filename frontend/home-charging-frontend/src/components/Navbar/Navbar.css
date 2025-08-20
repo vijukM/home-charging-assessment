@@ -11,7 +11,9 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
-
+body {
+  padding-top: 70px; /* ili koliko god je visok tvoj navbar */
+}
 #navbar {
   background-image: url('https://static.vecteezy.com/system/resources/previews/030/514/022/non_2x/green-background-with-gradient-concept-vector.jpg');
   background-size: cover;

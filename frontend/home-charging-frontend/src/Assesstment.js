@@ -89,13 +89,6 @@ function App() {
         { id: 5, name: 'Subotica' },
         { id: 6, name: 'Pančevo' }
       ],
-      'Croatia': [
-        { id: 1, name: 'Zagreb' },
-        { id: 2, name: 'Split' },
-        { id: 3, name: 'Rijeka' },
-        { id: 4, name: 'Osijek' },
-        { id: 5, name: 'Zadar' }
-      ],
       'Germany': [
         { id: 1, name: 'Berlin' },
         { id: 2, name: 'Munich' },
@@ -277,6 +270,9 @@ function App() {
     loadCountries();
   }, []);
 
+const handleBackToHome = () => {
+  window.location.pathname = '/';
+};
   const loadCountries = async () => {
     try {
       setLoading(true);
@@ -489,8 +485,7 @@ function App() {
       const finalAssessment = {
         ...assessment,
         CurrentPage: steps.length,
-        IsComplete: true,
-        CompletedAt: new Date().toISOString()
+        IsComplete: true
       };
       
       await assessmentService.updateAssessment(
@@ -911,8 +906,8 @@ if (!isAuthenticated) {
           <div className="step-form">
             <StepHeader title={step.title} image={step.image} />
 
-            <div className="form-grid">
-              <div className="form-group">
+            <div className="form-gridd">
+              <div className="form-groupp">
                 <label>First Name</label>
                 <input
                   type="text"
@@ -923,7 +918,7 @@ if (!isAuthenticated) {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-groupp">
                 <label>Last Name</label>
                 <input
                   type="text"
@@ -934,7 +929,7 @@ if (!isAuthenticated) {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-groupp">
                  <label>Email</label>
                 <input
                   type="email"
@@ -952,7 +947,7 @@ if (!isAuthenticated) {
                 )}
               </div>
 
-              <div className="form-group phone-group">
+              <div className="form-groupp phone-group">
                 <label>Phone</label>
                 <div className="phone-input-wrapper">
                   <PhoneInput
@@ -986,8 +981,8 @@ if (!isAuthenticated) {
           <div className="step-form">
             <StepHeader title={step.title} image={step.image} />
 
-            <div className="form-grid">
-          <div className="form-group">
+            <div className="form-gridd">
+          <div className="form-groupp">
               <label>Brand</label>
               {evLoading ? (
                 <div>Loading brands...</div>
@@ -1006,7 +1001,7 @@ if (!isAuthenticated) {
                 </select>
               )}
            </div>
-           <div className="form-group">
+           <div className="form-groupp">
               <label>Base Model</label>
               <select
                 value={stepData.BaseModel}
@@ -1023,7 +1018,7 @@ if (!isAuthenticated) {
               </select>
             </div>
 
-             <div className="form-group">
+             <div className="form-groupp">
                 <label>Model</label>
                 <select
                   value={stepData.Model}
@@ -1039,7 +1034,7 @@ if (!isAuthenticated) {
                 </select>
             </div>
 
-              <div className="form-group">
+              <div className="form-groupp">
                 <label>Year of Manufacture</label>
                 <input
                   type="number"
@@ -1060,8 +1055,8 @@ if (!isAuthenticated) {
           <div className="step-form">
             <StepHeader title={step.title} image={step.image} />
 
-          <div className="form-grid-three">
-    <div className="form-group">
+          <div className="form-gridd-three">
+    <div className="form-groupp">
       <label>Panel Location</label>
       <select
         value={stepData.Location}
@@ -1075,7 +1070,7 @@ if (!isAuthenticated) {
       </select>
     </div>
 
-    <div className="form-group">
+    <div className="form-groupp">
       <label>Main Circuit Breaker Capacity (A)</label>
       <select
         value={stepData.MainBreakerCapacity}
@@ -1092,7 +1087,7 @@ if (!isAuthenticated) {
       </select>
     </div>
 
-    <div className="form-group">
+    <div className="form-groupp">
       <label>Number of Free Slots in Panel</label>   
       <input
         type="number"
@@ -1111,8 +1106,8 @@ if (!isAuthenticated) {
           <div className="step-form">
             <StepHeader title={step.title} image={step.image} />
 
-            <div className="form-grid">
-              <div className="form-group">
+            <div className="form-gridd">
+              <div className="form-groupp">
                 <label>Planned Charger Location</label>
                <select
                       value={stepData.Location}
@@ -1126,7 +1121,7 @@ if (!isAuthenticated) {
               </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-groupp">
                 <label>Distance from Electrical Panel (m)</label>
                 <input
                   type="number"
@@ -1147,8 +1142,8 @@ if (!isAuthenticated) {
     return (
       <div className="step-form">
         <StepHeader title={step.title} image={step.image} />
-        <div className="form-grid-three">
-          <div className="form-group">
+        <div className="form-gridd-three">
+          <div className="form-groupp">
             <label>Country</label>
             <select
               value={stepData.Address.Country}
@@ -1173,7 +1168,7 @@ if (!isAuthenticated) {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="form-groupp">
             <label>City</label>
             <select
               value={stepData.Address.City}
@@ -1192,7 +1187,7 @@ if (!isAuthenticated) {
               ))}
             </select>
           </div>
-    <div className="form-group ">
+    <div className="form-groupp ">
             <label>Number of High-Energy Devices</label>
             <input
               type="number"
@@ -1204,7 +1199,7 @@ if (!isAuthenticated) {
             />
             <small>Air conditioners, boilers, induction stoves, etc.</small>
           </div>
-          <div className="form-group">
+          <div className="form-groupp">
             <label>Street</label>
             <input
               type="text"
@@ -1218,7 +1213,7 @@ if (!isAuthenticated) {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-groupp">
             <label>Street Number</label>
             <input
               type="text"
@@ -1232,7 +1227,7 @@ if (!isAuthenticated) {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-groupp">
             <label>Postal Code</label>
             <input
               type="text"
@@ -1783,9 +1778,9 @@ case 'EvChargerInfo':
 
       {/* Custom Completion Modal */}
       {showCompletionModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="modal-overlayq">
+          <div className="modal-contentq">
+            <div className="modal-headerq">
               <div className="modal-icon">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="12" cy="12" r="10" fill="#27ae60"/>
@@ -1803,14 +1798,12 @@ case 'EvChargerInfo':
             <div className="modal-footer">
               <button 
                 className="btn btn-secondary modal-btn"
-                onClick={handleStartNewAssessment}
-              >
-                Start New Assessment
+                onClick={handleBackToHome}>
+                Back to Home
               </button>
               <button 
                 className="btn btn-success modal-btn"
-                onClick={handleViewRecommendations}
-              >
+                onClick={handleViewRecommendations}>
                 View Recommendations
               </button>
             </div>

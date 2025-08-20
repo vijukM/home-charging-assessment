@@ -15,7 +15,6 @@ function Navbar() {
   const navigate = useNavigate();
 
   // Admin dropdown states
-  const [isAssessmentDropdownOpen, setIsAssessmentDropdownOpen] = useState(false);
   const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
   const [isAnalyticsDropdownOpen, setIsAnalyticsDropdownOpen] = useState(false);
   const [isSystemDropdownOpen, setIsSystemDropdownOpen] = useState(false);
@@ -136,42 +135,10 @@ function Navbar() {
         </li>
 
         {/* Assessment Management */}
-        <li 
-          className="nav-item dropdown"
-          onMouseEnter={() => setIsAssessmentDropdownOpen(true)}
-          onMouseLeave={() => setIsAssessmentDropdownOpen(false)}
-        >
-          <a href="#" className="nav-link dropdown-toggle">
+        <li className="nav-item">
+            <Link to="/admin/assessments" className="nav-link">
             Assessments
-            <svg className="dropdown-arrow" viewBox="0 0 24 24">
-              <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
-            </svg>
-          </a>
-          {isAssessmentDropdownOpen && (
-            <div className="dropdown-menu">
-              <Link to="/admin/assessments/all" className="dropdown-item">
-                <i className="fas fa-list-ul"></i>
-                All Assessments
-              </Link>
-              <Link to="/admin/assessments/completed" className="dropdown-item">
-                <i className="fas fa-check-circle"></i>
-                Completed
-              </Link>
-              <Link to="/admin/assessments/incomplete" className="dropdown-item">
-                <i className="fas fa-times-circle"></i>
-                Incomplete
-              </Link>
-              <Link to="/admin/assessments/abandoned" className="dropdown-item">
-                <i className="fas fa-exclamation-triangle"></i>
-                Abandoned
-              </Link>
-              <div className="dropdown-divider"></div>
-              <Link to="/admin/assessments/export" className="dropdown-item">
-                <i className="fas fa-download"></i>
-                Export Data
-              </Link>
-            </div>
-          )}
+          </Link>
         </li>
 
         {/* Customer Management */}
@@ -180,23 +147,23 @@ function Navbar() {
           onMouseEnter={() => setIsCustomerDropdownOpen(true)}
           onMouseLeave={() => setIsCustomerDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
-            Customers
+          <span className="nav-link dropdown-toggle">
+            Users
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isCustomerDropdownOpen && (
             <div className="dropdown-menu">
-              <Link to="/admin/customers/all" className="dropdown-item">
+              <Link to="/admin/users/all" className="dropdown-item">
                 <i className="fas fa-users"></i>
-                All Customers
+                All Users
               </Link>
-              <Link to="/admin/customers/active" className="dropdown-item">
+              <Link to="/admin/users/active" className="dropdown-item">
                 <i className="fas fa-user-check"></i>
                 Active Users
               </Link>
-              <Link to="/admin/customers/recent" className="dropdown-item">
+              <Link to="/admin/users/recent" className="dropdown-item">
                 <i className="fas fa-user-plus"></i>
                 Recent Signups
               </Link>
@@ -210,12 +177,12 @@ function Navbar() {
           onMouseEnter={() => setIsAnalyticsDropdownOpen(true)}
           onMouseLeave={() => setIsAnalyticsDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
+          <span className="nav-link dropdown-toggle">
             Analytics
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isAnalyticsDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/admin/analytics/completion-rates" className="dropdown-item">
@@ -240,12 +207,12 @@ function Navbar() {
           onMouseEnter={() => setIsSystemDropdownOpen(true)}
           onMouseLeave={() => setIsSystemDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
+          <span className="nav-link dropdown-toggle">
             System
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isSystemDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/admin/system/admins" className="dropdown-item">
@@ -277,12 +244,12 @@ function Navbar() {
           onMouseEnter={() => setIsHomeDropdownOpen(true)}
           onMouseLeave={() => setIsHomeDropdownOpen(false)}
         >
-          <a href="/" className="nav-link dropdown-toggle">
+          <Link to="/" className="nav-link dropdown-toggle">
             Home
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </Link>
           {isHomeDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/" className="dropdown-item">
@@ -322,12 +289,12 @@ function Navbar() {
           onMouseEnter={() => setIsMyDropdownOpen(true)}
           onMouseLeave={() => setIsMyDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
+          <span className="nav-link dropdown-toggle">
             My Account
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isMyDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/my-assessments" className="dropdown-item">
@@ -356,12 +323,12 @@ function Navbar() {
           onMouseEnter={() => setIsServicesDropdownOpen(true)}
           onMouseLeave={() => setIsServicesDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
+          <span className="nav-link dropdown-toggle">
             Services
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isServicesDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/installation-booking" className="dropdown-item">
@@ -390,12 +357,12 @@ function Navbar() {
           onMouseEnter={() => setIsContactDropdownOpen(true)}
           onMouseLeave={() => setIsContactDropdownOpen(false)}
         >
-          <a href="#" className="nav-link dropdown-toggle">
+          <span className="nav-link dropdown-toggle">
             Contact
             <svg className="dropdown-arrow" viewBox="0 0 24 24">
               <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
             </svg>
-          </a>
+          </span>
           {isContactDropdownOpen && (
             <div className="dropdown-menu">
               <Link to="/contact" className="dropdown-item">
