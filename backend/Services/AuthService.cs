@@ -310,14 +310,6 @@ namespace home_charging_assessment.Services
             });
         }
 
-        public async Task<User?> UpdateUserRolesAsync(string userId, List<string> roles)
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) return null;
-
-            user.Roles = roles;
-            return await _userRepository.UpdateAsync(user);
-        }
 
         private string GenerateVerificationToken()
         {
@@ -335,6 +327,34 @@ namespace home_charging_assessment.Services
         private bool VerifyPassword(string password, string hash)
         {
             return BCrypt.Net.BCrypt.Verify(password, hash);
+        }
+
+        public async Task<bool> DeleteUserAsync(string userId)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return false;
+                }
+                // Možeš dodati dodatne provere ovde:
+                // - Da li korisnik ima aktivne assessments
+                // - Da li je poslednji admin u sistemu
+                var deleted = await _userRepository.DeleteAsync(userId);
+
+                if (deleted)
+                {
+                    _logger.LogInformation("User {UserId} ({Username}) was deleted", userId, user.Username);
+                }
+
+                return deleted;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting user {UserId}", userId);
+                return false;
+            }
         }
     }
 }

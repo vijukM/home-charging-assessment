@@ -15,6 +15,6 @@ namespace home_charging_assessment.ServiceInterfaces
         string GenerateJwtToken(User user);
         Task<User?> GetUserByIdAsync(string userId);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        Task<User?> UpdateUserRolesAsync(string userId, List<string> roles);
+        Task<bool> DeleteUserAsync(string userId);
     }
 }

@@ -660,9 +660,6 @@ const DeleteAssessmentModal = ({ assessment, loading, onConfirm, onClose }) => {
       
       <div className="modal-body delete-body">
         <div className="delete-confirmation">
-          <div className="warning-icon">
-            <i className="fas fa-exclamation-triangle"></i>
-          </div>
           <h3>Are you sure you want to delete this assessment?</h3>
           <div className="user-info">
             <p>This will permanently delete the assessment for:</p>
@@ -868,11 +865,8 @@ function AllAssessments() {
     }
   };
 
-  // FIXED: handleSaveEdit function - ovo je ključno!
   const handleSaveEdit = async (updatedAssessment) => {
     try {
-      console.log('Saving assessment:', updatedAssessment);
-      
       await adminService.updateAssessment(
         updatedAssessment.id, 
         updatedAssessment.customerId, 
@@ -886,11 +880,11 @@ function AllAssessments() {
       setViewModal({ open: true, assessment: refreshedAssessment });
       
     } catch (error) {
-      console.error('Error updating assessment:', error);
       alert(adminService.handleError(error, 'updating assessment'));
       throw error; // Re-throw so modal can handle it
     }
   };
+  
   const handleDeleteAssessment = (assessment) => {
     setDeleteModal({ open: true, assessment, loading: false });
   };

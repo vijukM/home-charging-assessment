@@ -67,6 +67,638 @@ const BaseModal = ({ children, className = '', onClose }) => {
   );
 };
 
+const PrimaryRoleBadge = ({ roles }) => {
+  if (!roles || roles.length === 0) {
+    return <span className="role-badge user">User</span>;
+  }
+  
+  const primaryRole = roles[0]; // Uzmi samo prvu rolu
+  return (
+    <span className={`role-badge ${primaryRole.toLowerCase()}`}>
+      {primaryRole}
+    </span>
+  );
+};
+
+// Helper komponenta za email sa verifikacijom
+const EmailWithVerification = ({ email, emailVerified }) => {
+  return (
+    <div className="email-verification-container">
+      <span className="email-cell">{email}</span>
+      {emailVerified && (
+        <span className="verification-icon verified">
+          <i className="fas fa-check-circle"></i>
+        </span>
+      )}
+    </div>
+  );
+};
+
+// Delete User Modal komponenta
+const DeleteUserModal = ({ user, loading, onConfirm, onClose }) => {
+  return (
+    <BaseModal className="delete-modal delete-overlay" onClose={onClose}>
+      <div className="modal-header delete-header">
+        <h2>Delete User</h2>
+        <button className="btn-close" onClick={onClose}>
+          <i className="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div className="modal-body delete-body">
+        <div className="delete-confirmation">
+          <h3>Are you sure you want to delete this user?</h3>
+          <div className="user-info">
+            <p>This will permanently delete the user account for:</p>
+            <div className="user-card">
+              <div className="user-avatar">
+                <i className="fas fa-user"></i>
+              </div>
+              <div className="user-details">
+                <strong>
+                  {user.username || 'Unknown User'}
+                </strong>
+                <span>{user.email || 'No email provided'}</span>
+                <div className="user-status">
+                  <StatusBadge user={user} />
+                  <PrimaryRoleBadge roles={user.roles} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="warning-text">
+            <p><strong>Warning:</strong> This action cannot be undone. All user data, assessments, and associated records will be permanently deleted.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="modal-footer delete-footer">
+        <button 
+          className="btn-secondary" 
+          onClick={onClose}
+          disabled={loading}
+        >
+          <i className="fas fa-times"></i> Cancel
+        </button>
+        <button 
+          className="btn-danger" 
+          onClick={onConfirm}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <i className="fas fa-spinner fa-spin"></i> Deleting...
+            </>
+          ) : (
+            <>
+              <i className="fas fa-trash"></i> Delete User
+            </>
+          )}
+        </button>
+      </div>
+    </BaseModal>
+  );
+};
+
+const getFieldValue = (obj, path, fallbackPath = null) => {
+  const getValue = (object, fieldPath) => {
+    return fieldPath.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : undefined;
+    }, object);
+  };
+  
+  let value = getValue(obj, path);
+  if (value === undefined && fallbackPath) {
+    value = getValue(obj, fallbackPath);
+  }
+  return value;
+};
+
+// ViewAssessmentModal komponenta
+const ViewAssessmentModal = ({ assessment, onClose, onSave }) => {
+  const [activeSection, setActiveSection] = useState('Personal Info');
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(assessment || {});
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (assessment) {
+      setFormData(assessment);
+    }
+  }, [assessment]);
+
+  const sections = [
+    { title: 'Personal Info', image: 'person' },
+    { title: 'Home Info', image: 'house' },
+    { title: 'Vehicle Info', image: 'electric-car' },
+    { title: 'Electrical Panel', image: 'electric-panel' },
+    { title: 'Charger Location', image: 'electric-charger' },
+    { title: 'EV Charger', image: 'ev-charger' }
+  ];
+
+  const handleInputChange = (section, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+    setSaved(false);
+  };
+
+  const handleNestedInputChange = (section, subsection, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [subsection]: {
+          ...prev[section]?.[subsection],
+          [field]: value
+        }
+      }
+    }));
+    setSaved(false);
+  };
+
+  const handleSave = async () => {
+    if (!onSave) {
+      console.error('onSave function not provided');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSave(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Error saving assessment: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+    if (isEditing) {
+      setFormData(assessment);
+      setSaved(false);
+    }
+  };
+
+  const renderField = (label, value, type = 'text', options = null, onChange = null) => {
+    if (!isEditing) {
+      return (
+        <div className="field-group">
+          <label>{label}</label>
+          <span>{value || ''}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="field-group editing">
+        <label>{label}</label>
+        {type === 'select' ? (
+          <select value={value || ''} onChange={onChange} className="edit-input">
+            {options.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type={type}
+            value={value || ''}
+            onChange={onChange}
+            className="edit-input"
+            step={type === 'number' ? '0.1' : undefined}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const renderPersonalInfo = () => (
+    <div className="section-content">
+      {renderField(
+        'Customer ID',
+        getFieldValue(formData, 'customerId', 'CustomerId'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          setFormData(prev => ({ ...prev, CustomerId: e.target.value, customerId: e.target.value }));
+          setSaved(false);
+        } : null
+      )}
+      {renderField(
+        'First Name',
+        getFieldValue(formData, 'personalInfo.firstName', 'PersonalInfo.FirstName'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('PersonalInfo', 'FirstName', e.target.value);
+          handleInputChange('personalInfo', 'firstName', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Last Name',
+        getFieldValue(formData, 'personalInfo.lastName', 'PersonalInfo.LastName'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('PersonalInfo', 'LastName', e.target.value);
+          handleInputChange('personalInfo', 'lastName', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Email',
+        getFieldValue(formData, 'personalInfo.email', 'PersonalInfo.Email'),
+        'email',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('PersonalInfo', 'Email', e.target.value);
+          handleInputChange('personalInfo', 'email', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Phone',
+        getFieldValue(formData, 'personalInfo.phone', 'PersonalInfo.Phone'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('PersonalInfo', 'Phone', e.target.value);
+          handleInputChange('personalInfo', 'phone', e.target.value);
+        } : null
+      )}
+    </div>
+  );
+
+  const renderHomeInfo = () => (
+    <div className="section-content">
+      {renderField(
+        'Country',
+        getFieldValue(formData, 'homeInfo.address.country', 'HomeInfo.Address.Country'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleNestedInputChange('HomeInfo', 'Address', 'Country', e.target.value);
+          handleNestedInputChange('homeInfo', 'address', 'country', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'City',
+        getFieldValue(formData, 'homeInfo.address.city', 'HomeInfo.Address.City'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleNestedInputChange('HomeInfo', 'Address', 'City', e.target.value);
+          handleNestedInputChange('homeInfo', 'address', 'city', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Postal Code',
+        getFieldValue(formData, 'homeInfo.address.postalCode', 'HomeInfo.Address.PostalCode'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleNestedInputChange('HomeInfo', 'Address', 'PostalCode', e.target.value);
+          handleNestedInputChange('homeInfo', 'address', 'postalCode', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Street',
+        getFieldValue(formData, 'homeInfo.address.street', 'HomeInfo.Address.Street'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleNestedInputChange('HomeInfo', 'Address', 'Street', e.target.value);
+          handleNestedInputChange('homeInfo', 'address', 'street', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Street Number',
+        getFieldValue(formData, 'homeInfo.address.streetNumber', 'HomeInfo.Address.StreetNumber'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleNestedInputChange('HomeInfo', 'Address', 'StreetNumber', e.target.value);
+          handleNestedInputChange('homeInfo', 'address', 'streetNumber', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'High Energy Devices',
+        getFieldValue(formData, 'homeInfo.numberOfHighEnergyDevices', 'HomeInfo.NumberOfHighEnergyDevices'),
+        'number',
+        null,
+        isEditing ? (e) => {
+          const value = parseInt(e.target.value) || 0;
+          handleInputChange('HomeInfo', 'NumberOfHighEnergyDevices', value);
+          handleInputChange('homeInfo', 'numberOfHighEnergyDevices', value);
+        } : null
+      )}
+    </div>
+  );
+
+  const renderVehicleInfo = () => (
+    <div className="section-content">
+      {renderField(
+        'Brand',
+        getFieldValue(formData, 'vehicleInfo.brand', 'VehicleInfo.Brand'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('VehicleInfo', 'Brand', e.target.value);
+          handleInputChange('vehicleInfo', 'brand', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Base Model',
+        getFieldValue(formData, 'vehicleInfo.baseModel', 'VehicleInfo.BaseModel'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('VehicleInfo', 'BaseModel', e.target.value);
+          handleInputChange('vehicleInfo', 'baseModel', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Model',
+        getFieldValue(formData, 'vehicleInfo.model', 'VehicleInfo.Model'),
+        'text',
+        null,
+        isEditing ? (e) => {
+          handleInputChange('VehicleInfo', 'Model', e.target.value);
+          handleInputChange('vehicleInfo', 'model', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Year',
+        getFieldValue(formData, 'vehicleInfo.year', 'VehicleInfo.Year'),
+        'number',
+        null,
+        isEditing ? (e) => {
+          const value = parseInt(e.target.value) || '';
+          handleInputChange('VehicleInfo', 'Year', value);
+          handleInputChange('vehicleInfo', 'year', value);
+        } : null
+      )}
+    </div>
+  );
+
+  const renderElectricalPanel = () => (
+    <div className="section-content">
+      {renderField(
+        'Location',
+        getFieldValue(formData, 'electricalPanelInfo.location', 'ElectricalPanelInfo.Location'),
+        'select',
+        [
+          { value: '', label: 'Select Location' },
+          { value: 'Basement', label: 'Basement' },
+          { value: 'Garage', label: 'Garage' },
+          { value: 'Attic', label: 'Attic' },
+          { value: 'Outside', label: 'Outside' },
+          { value: 'Utility Room', label: 'Utility Room' }
+        ],
+        isEditing ? (e) => {
+          handleInputChange('ElectricalPanelInfo', 'Location', e.target.value);
+          handleInputChange('electricalPanelInfo', 'location', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Main Breaker Capacity',
+        getFieldValue(formData, 'electricalPanelInfo.mainBreakerCapacity', 'ElectricalPanelInfo.MainBreakerCapacity'),
+        'number',
+        null,
+        isEditing ? (e) => {
+          const value = parseInt(e.target.value) || 0;
+          handleInputChange('ElectricalPanelInfo', 'MainBreakerCapacity', value);
+          handleInputChange('electricalPanelInfo', 'mainBreakerCapacity', value);
+        } : null
+      )}
+      {renderField(
+        'Open Slots',
+        getFieldValue(formData, 'electricalPanelInfo.numberOfOpenSlots', 'ElectricalPanelInfo.NumberOfOpenSlots'),
+        'number',
+        null,
+        isEditing ? (e) => {
+          const value = parseInt(e.target.value) || 0;
+          handleInputChange('ElectricalPanelInfo', 'NumberOfOpenSlots', value);
+          handleInputChange('electricalPanelInfo', 'numberOfOpenSlots', value);
+        } : null
+      )}
+    </div>
+  );
+
+  const renderChargerLocation = () => (
+    <div className="section-content">
+      {renderField(
+        'Preferred Location',
+        getFieldValue(formData, 'chargerInfo.location', 'ChargerInfo.Location'),
+        'select',
+        [
+          { value: '', label: 'Select Location' },
+          { value: 'Garage', label: 'Garage' },
+          { value: 'Driveway', label: 'Driveway' },
+          { value: 'Yard', label: 'Yard' },
+          { value: 'Parking Spot', label: 'Parking Spot' }
+        ],
+        isEditing ? (e) => {
+          handleInputChange('ChargerInfo', 'Location', e.target.value);
+          handleInputChange('chargerInfo', 'location', e.target.value);
+        } : null
+      )}
+      {renderField(
+        'Distance from Panel',
+        getFieldValue(formData, 'chargerInfo.distanceFromPanelMeters', 'ChargerInfo.DistanceFromPanelMeters'),
+        'number',
+        null,
+        isEditing ? (e) => {
+          const value = parseFloat(e.target.value) || 0;
+          handleInputChange('ChargerInfo', 'DistanceFromPanelMeters', value);
+          handleInputChange('chargerInfo', 'distanceFromPanelMeters', value);
+        } : null
+      )}
+    </div>
+  );
+
+  const renderEVCharger = () => {
+    const hasCharger = getFieldValue(formData, 'evChargerInfo.hasCharger', 'EvChargerInfo.HasCharger', null);
+    const wantsToBuy = getFieldValue(formData, 'evChargerInfo.wantsToBuy', 'EvChargerInfo.WantsToBuy', null);
+    const showChargerDetails = hasCharger === true || wantsToBuy === true;
+
+    return (
+      <div className="section-content">
+        {renderField(
+          'Has Charger',
+          isEditing ? (hasCharger === null ? '' : hasCharger.toString()) : (hasCharger === true ? 'Yes' : hasCharger === false ? 'No' : ''),
+          'select',
+          [
+            { value: '', label: 'Select' },
+            { value: 'false', label: 'No' },
+            { value: 'true', label: 'Yes' }
+          ],
+          isEditing ? (e) => {
+            const value = e.target.value === '' ? null : e.target.value === 'true';
+            handleInputChange('EvChargerInfo', 'HasCharger', value);
+            handleInputChange('evChargerInfo', 'hasCharger', value);
+          } : null
+        )}
+        {renderField(
+          'Wants to Buy',
+          isEditing ? (wantsToBuy === null ? '' : wantsToBuy.toString()) : (wantsToBuy === true ? 'Yes' : wantsToBuy === false ? 'No' : ''),
+          'select',
+          [
+            { value: '', label: 'Select' },
+            { value: 'false', label: 'No' },
+            { value: 'true', label: 'Yes' }
+          ],
+          isEditing ? (e) => {
+            const value = e.target.value === '' ? null : e.target.value === 'true';
+            handleInputChange('EvChargerInfo', 'WantsToBuy', value);
+            handleInputChange('evChargerInfo', 'wantsToBuy', value);
+          } : null
+        )}
+        
+        {showChargerDetails && (
+          <>
+            {renderField(
+              'Brand',
+              getFieldValue(formData, 'evChargerInfo.evCharger.brand', 'EvChargerInfo.EvCharger.Brand'),
+              'text',
+              null,
+              isEditing ? (e) => {
+                handleNestedInputChange('EvChargerInfo', 'EvCharger', 'Brand', e.target.value);
+                handleNestedInputChange('evChargerInfo', 'evCharger', 'brand', e.target.value);
+              } : null
+            )}
+            {renderField(
+              'Model',
+              getFieldValue(formData, 'evChargerInfo.evCharger.model', 'EvChargerInfo.EvCharger.Model'),
+              'text',
+              null,
+              isEditing ? (e) => {
+                handleNestedInputChange('EvChargerInfo', 'EvCharger', 'Model', e.target.value);
+                handleNestedInputChange('evChargerInfo', 'evCharger', 'model', e.target.value);
+              } : null
+            )}
+            {renderField(
+              'Power (kW)',
+              getFieldValue(formData, 'evChargerInfo.evCharger.powerKw', 'EvChargerInfo.EvCharger.PowerKw'),
+              'number',
+              null,
+              isEditing ? (e) => {
+                const value = parseFloat(e.target.value) || 0;
+                handleNestedInputChange('EvChargerInfo', 'EvCharger', 'PowerKw', value);
+                handleNestedInputChange('evChargerInfo', 'evCharger', 'powerKw', value);
+              } : null
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'Personal Info':
+        return renderPersonalInfo();
+      case 'Home Info':
+        return renderHomeInfo();
+      case 'Vehicle Info':
+        return renderVehicleInfo();
+      case 'Electrical Panel':
+        return renderElectricalPanel();
+      case 'Charger Location':
+        return renderChargerLocation();
+      case 'EV Charger':
+        return renderEVCharger();
+      default:
+        return renderPersonalInfo();
+    }
+  };
+
+  return (
+    <BaseModal className="view-modal-clean" onClose={onClose}>
+      <div className="modal-body-clean">
+        <div className="sidebar">
+          <div className="logo-section-VM">
+            <div className="header-logo">
+              <span className="header-logo-icon"></span>
+              <span className="header-logo-text">EV Charge</span>
+            </div>
+          </div>
+          
+          <div className="sections-menu">
+            {sections.map((section) => (
+              <div
+                key={section.title}
+                className={`menu-item ${activeSection === section.title ? 'active' : ''}`}
+                onClick={() => setActiveSection(section.title)}
+              >
+                <img 
+                  src={require(`../../res/${section.image}.png`)} 
+                  alt={section.title}
+                  className="menu-icon"
+                />
+                <span>{section.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="content-area">
+          <div className="content-header">
+            <h3>{activeSection}</h3>
+            <div className="header-actions">
+              {saved && (
+                <span className="saved-indicator">
+                  <i className="fas fa-check"></i> Saved
+                </span>
+              )}
+              <button 
+                className={`edit-toggle ${isEditing ? 'active' : ''}`}
+                onClick={toggleEdit}
+                title={isEditing ? 'Cancel Edit' : 'Edit'}
+              >
+                <i className={`fas ${isEditing ? 'fa-times' : 'fa-edit'}`}></i>
+              </button>
+            </div>
+          </div>
+          
+          {renderContent()}
+        </div>
+      </div>
+      
+      <div className="modal-footer-actions">
+        <button className="btn-close" onClick={onClose}>
+          Close
+        </button>
+        {isEditing && (
+          <button 
+            className="btn-save" 
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i> Save
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </BaseModal>
+  );
+};
+
 // Helper komponenta za status badge
 const StatusBadge = ({ user }) => {
   if (!user.isActive) return <span className="status-badge inactive">Inactive</span>;
@@ -91,7 +723,7 @@ const RolesBadge = ({ roles }) => {
   );
 };
 
-// View User Modal
+// View User Modal sa osnovnim stilom
 const ViewUserModal = ({ user, onClose }) => {
   return (
     <BaseModal className="view-modal" onClose={onClose}>
@@ -185,116 +817,6 @@ const ViewUserModal = ({ user, onClose }) => {
   );
 };
 
-// Edit User Roles Modal
-const EditUserRolesModal = ({ user, loading, onSave, onClose }) => {
-  const [selectedRoles, setSelectedRoles] = useState(user?.roles || []);
-  const availableRoles = ['Admin', 'User', 'Moderator', 'Manager'];
-
-  const handleRoleToggle = (role) => {
-    setSelectedRoles(prev => {
-      if (prev.includes(role)) {
-        return prev.filter(r => r !== role);
-      } else {
-        return [...prev, role];
-      }
-    });
-  };
-
-  const handleSave = () => {
-    onSave(selectedRoles);
-  };
-
-  return (
-    <BaseModal className="edit-modal" onClose={onClose}>
-      <div className="modal-header">
-        <h2>Edit User Roles</h2>
-        <button className="btn-close" onClick={onClose}>
-          <i className="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div className="modal-body">
-        <div className="roles-edit-form">
-          <div className="user-info-section">
-            <h3>User Information</h3>
-            <div className="user-card">
-              <div className="user-avatar">
-                <i className="fas fa-user"></i>
-              </div>
-              <div className="user-details">
-                <strong>{user.username || user.email}</strong>
-                <span>{user.email}</span>
-                <span className="user-status">
-                  <StatusBadge user={user} />
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="roles-selection-section">
-            <h3>Available Roles</h3>
-            <div className="roles-grid">
-              {availableRoles.map(role => (
-                <label key={role} className="role-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={selectedRoles.includes(role)}
-                    onChange={() => handleRoleToggle(role)}
-                  />
-                  <span className="checkmark"></span>
-                  <span className={`role-label ${role.toLowerCase()}`}>
-                    {role}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="current-roles-preview">
-            <h4>Selected Roles:</h4>
-            <div className="roles-preview">
-              {selectedRoles.length > 0 ? (
-                selectedRoles.map((role, index) => (
-                  <span key={index} className={`role-badge ${role.toLowerCase()}`}>
-                    {role}
-                  </span>
-                ))
-              ) : (
-                <span className="role-badge user">User (Default)</span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="modal-footer">
-        <button 
-          className="btn-secondary" 
-          onClick={onClose}
-          disabled={loading}
-        >
-          Cancel
-        </button>
-        <button 
-          className="btn-primary" 
-          onClick={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <i className="fas fa-spinner fa-spin"></i> Saving...
-            </>
-          ) : (
-            <>
-              <i className="fas fa-save"></i> Save Changes
-            </>
-          )}
-        </button>
-      </div>
-    </BaseModal>
-  );
-};
-
 // Glavni AllUsers komponenta
 function AllUsers() {
   // State management
@@ -330,7 +852,30 @@ function AllUsers() {
 
   // Modal states
   const [viewModal, setViewModal] = useState({ open: false, user: null });
-  const [editModal, setEditModal] = useState({ open: false, user: null, loading: false });
+  const [viewAssessmentModal, setViewAssessmentModal] = useState({ open: false, assessment: null });
+  const [deleteModal, setDeleteModal] = useState({ open: false, user: null, loading: false });
+
+  // Handler funkcije za brisanje korisnika
+  const handleDeleteUser = (user) => {
+    setDeleteModal({ open: true, user, loading: false });
+  };
+
+  const confirmDeleteUser = async () => {
+    setDeleteModal(prev => ({ ...prev, loading: true }));
+    
+    try {
+      await adminService.deleteUser(deleteModal.user.id);
+      setDeleteModal({ open: false, user: null, loading: false });
+      loadUsers(false); // Refresh data
+      
+      // Ukloni iz selected items ako je bio selektovan
+      setSelectedItems(prev => prev.filter(id => id !== deleteModal.user.id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert(adminService.handleError(error, 'deleting user'));
+      setDeleteModal(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   // Initial load effect
   useEffect(() => {
@@ -492,35 +1037,46 @@ function AllUsers() {
     setViewModal({ open: true, user });
   };
 
-  const handleEditUserRoles = (user) => {
-    setEditModal({ open: true, user, loading: false });
-  };
-
-  const handleSaveRoles = async (roles) => {
-    setEditModal(prev => ({ ...prev, loading: true }));
-    
-    try {
-      await adminService.updateUserRoles(editModal.user.id, roles);
-      
-      setEditModal({ open: false, user: null, loading: false });
-      loadUsers(false); // Refresh data
-      alert('User roles updated successfully');
-    } catch (error) {
-      console.error('Error updating user roles:', error);
-      alert(adminService.handleError(error, 'updating user roles'));
-      setEditModal(prev => ({ ...prev, loading: false }));
-    }
-  };
-
   const handleViewUserAssessments = async (user) => {
     try {
       const assessments = await adminService.getUserAssessments(user.id);
-      // You might want to open a modal or navigate to assessments page
-      console.log('User assessments:', assessments);
-      alert(`Found ${assessments.length} assessments for this user`);
+      
+      if (assessments && assessments.length > 0) {
+        // Ako ima assessments, otvori modal sa prvim assessment-om
+        // Možete dodati logiku za izbor konkretnog assessment-a ako ih ima više
+        const firstAssessment = assessments[0];
+        setViewAssessmentModal({ open: true, assessment: firstAssessment });
+      } else {
+        alert(`No assessments found for user: ${user.username || user.email}`);
+      }
     } catch (error) {
       console.error('Error loading user assessments:', error);
       alert(adminService.handleError(error, 'loading user assessments'));
+    }
+  };
+
+  // Handle Save Assessment
+  const handleSaveAssessment = async (updatedAssessment) => {
+    try {
+      console.log('Saving assessment:', updatedAssessment);
+      
+      await adminService.updateAssessment(
+        updatedAssessment.id, 
+        updatedAssessment.customerId, 
+        adminService.formatAssessmentForAPI(updatedAssessment)
+      );
+      
+      // Refresh assessment data
+      const refreshedAssessment = await adminService.getAssessmentById(
+        updatedAssessment.id, 
+        updatedAssessment.customerId
+      );
+      setViewAssessmentModal({ open: true, assessment: refreshedAssessment });
+      
+    } catch (error) {
+      console.error('Error updating assessment:', error);
+      alert(adminService.handleError(error, 'updating assessment'));
+      throw error; // Re-throw so modal can handle it
     }
   };
 
@@ -727,8 +1283,8 @@ function AllUsers() {
                   <th>Username</th>
                   <th>Email</th>
                   <th>Status</th>
-                  <th>Roles</th>
-                  <th>Email Verified</th>
+                  <th>Role</th>
+                  <th>Assessment</th>
                   <th>Created</th>
                   <th>Last Login</th>
                   <th>Actions</th>
@@ -747,17 +1303,22 @@ function AllUsers() {
                     <td>
                       <strong>{user.username || '—'}</strong>
                     </td>
-                    <td className="email-cell">{user.email}</td>
-                    <td><StatusBadge user={user} /></td>
-                    <td><RolesBadge roles={user.roles} /></td>
                     <td>
-                      <span className={`verification-badge ${user.emailVerified ? 'verified' : 'unverified'}`}>
-                        {user.emailVerified ? (
-                          <><i className="fas fa-check"></i> Verified</>
-                        ) : (
-                          <><i className="fas fa-times"></i> Unverified</>
-                        )}
-                      </span>
+                      <EmailWithVerification 
+                        email={user.email} 
+                        emailVerified={user.emailVerified} 
+                      />
+                    </td>
+                    <td><StatusBadge user={user} /></td>
+                    <td><PrimaryRoleBadge roles={user.roles} /></td>
+                    <td>
+                      <button 
+                        className="btn-assessments" 
+                        title="View Assessment"
+                        onClick={() => handleViewUserAssessments(user)}
+                      >
+                        <i className="fas fa-clipboard-list"></i>
+                      </button>
                     </td>
                     <td>{formatDate(user.createdAt)}</td>
                     <td>{formatDate(user.lastLogin)}</td>
@@ -771,18 +1332,11 @@ function AllUsers() {
                           <i className="fas fa-eye"></i>
                         </button>
                         <button 
-                          className="btn-edit" 
-                          title="Edit Roles"
-                          onClick={() => handleEditUserRoles(user)}
+                          className="btn-delete" 
+                          title="Delete"
+                          onClick={() => handleDeleteUser(user)}
                         >
-                          <i className="fas fa-user-shield"></i>
-                        </button>
-                        <button 
-                          className="btn-assessments" 
-                          title="View Assessments"
-                          onClick={() => handleViewUserAssessments(user)}
-                        >
-                          <i className="fas fa-clipboard-list"></i>
+                          <i className="fas fa-trash"></i>
                         </button>
                       </div>
                     </td>
@@ -853,12 +1407,20 @@ function AllUsers() {
         />
       )}
 
-      {editModal.open && (
-        <EditUserRolesModal 
-          user={editModal.user}
-          loading={editModal.loading}
-          onSave={handleSaveRoles}
-          onClose={() => setEditModal({ open: false, user: null, loading: false })}
+      {viewAssessmentModal.open && (
+        <ViewAssessmentModal 
+          assessment={viewAssessmentModal.assessment}
+          onClose={() => setViewAssessmentModal({ open: false, assessment: null })}
+          onSave={handleSaveAssessment}
+        />
+      )}
+
+      {deleteModal.open && (
+        <DeleteUserModal 
+          user={deleteModal.user}
+          loading={deleteModal.loading}
+          onConfirm={confirmDeleteUser}
+          onClose={() => setDeleteModal({ open: false, user: null, loading: false })}
         />
       )}
     </div>

@@ -119,8 +119,16 @@ function AdminDashboard() {
       </div>
     );
   }
-
+const formatMinutesToTime = (decimalMinutes) => {
+  if (!decimalMinutes || decimalMinutes === 0) return '0min 0sec';
+  
+  const minutes = Math.floor(decimalMinutes);
+  const seconds = Math.round((decimalMinutes - minutes) * 60);
+  
+  return `${minutes}:${seconds}`;
+};
   const { kpis, topData, chartSummary } = dashboardData;
+
 
   // Extract EV charger data from chart summary
   const getEvChargerCounts = () => {
@@ -136,12 +144,6 @@ function AdminDashboard() {
   };
 
   const evChargerCounts = getEvChargerCounts();
-
-  // DEBUG: Dodajte console.log da vidite šta backend vraća
-  console.log('Dashboard data:', dashboardData);
-  console.log('Chart summary:', chartSummary);
-  console.log('EV Charger counts:', evChargerCounts);
-  console.log('Top data:', topData);
 
   return (
     <div className="admin-dashboard">
@@ -175,16 +177,16 @@ function AdminDashboard() {
               </div>
             </div>
             
-            <div className="kpi-card time">
-              <div className="kpi-icon">
-                <i className="fas fa-stopwatch"></i>
-              </div>
-              <div className="kpi-content">
-                <h3>{kpis.averageCompletionTime || 0}</h3>
-                <p>Avg. Time (min)</p>
-                <small>Completion time</small>
-              </div>
-            </div>
+         <div className="kpi-card time">
+  <div className="kpi-icon">
+    <i className="fas fa-stopwatch"></i>
+  </div>
+  <div className="kpi-content">
+    <h3>{formatMinutesToTime(kpis.averageCompletionTime)}</h3>
+    <p>Avg. Time</p>
+    <small>Completion time (min:sec)</small>
+  </div>
+</div>
             
             {/* Middle Row - Completed and In Progress */}
             <div className="kpi-card completed">

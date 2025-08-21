@@ -37,7 +37,6 @@ namespace home_charging_assessment.Models.DTOs
         public DateTime ExpiresAt { get; set; }
     }
 
-    // MISSING UserDto - ADDED BACK
     public class UserDto
     {
         public string Id { get; set; } = string.Empty;
@@ -48,12 +47,6 @@ namespace home_charging_assessment.Models.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLogin { get; set; }
         public bool IsActive { get; set; }
-    }
-
-    public class UpdateUserRolesDto
-    {
-        [Required]
-        public List<string> Roles { get; set; } = new();
     }
 
     public class VerifyEmailDto

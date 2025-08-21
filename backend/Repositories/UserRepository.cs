@@ -120,7 +120,28 @@ namespace home_charging_assessment.Repositories
             var user = await GetByEmailAsync(email);
             return user != null;
         }
+        public async Task<bool> DeleteAsync(string userId)
+        {
+            try
+            {
+                var response = await _container.DeleteItemAsync<Models.User>(
+                    userId,
+                    new PartitionKey("USER")
+                );
 
+                return response.StatusCode == System.Net.HttpStatusCode.NoContent;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // User već ne postoji
+                return false;
+            }
+            catch (Exception)
+            {
+                // Greška tokom brisanja
+                return false;
+            }
+        }
         public async Task<IEnumerable<Models.User>> GetAllUsersAsync()
         {
             var query = _container.GetItemLinqQueryable<Models.User>().ToFeedIterator();

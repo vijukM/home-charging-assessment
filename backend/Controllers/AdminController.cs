@@ -49,19 +49,6 @@ namespace home_charging_assessment.Controllers
             });
         }
 
-        [HttpPut("users/{userId}/roles")]
-        public async Task<IActionResult> UpdateUserRoles(string userId, [FromBody] UpdateUserRolesDto dto)
-        {
-            var user = await _authService.UpdateUserRolesAsync(userId, dto.Roles);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(new { message = "Roles updated successfully" });
-        }
-
-        // NEW ASSESSMENT MANAGEMENT ENDPOINTS
-
         /// <summary>
         /// Get all assessments with pagination and filtering
         /// </summary>
@@ -288,20 +275,13 @@ namespace home_charging_assessment.Controllers
             {
                 switch (request.Action.ToLower())
                 {
-                    case "delete":
-                        // Implementation for bulk delete
-                        return Ok(new { message = "Bulk delete completed", affectedCount = request.AssessmentIds.Count });
+                    case "delete": return Ok(new { message = "Bulk delete completed", affectedCount = request.AssessmentIds.Count });
 
-                    case "export":
-                        // Implementation for bulk export
-                        return Ok(new { message = "Bulk export initiated", itemCount = request.AssessmentIds.Count });
+                    case "export":return Ok(new { message = "Bulk export initiated", itemCount = request.AssessmentIds.Count });
 
-                    case "archive":
-                        // Implementation for bulk archive
-                        return Ok(new { message = "Bulk archive completed", affectedCount = request.AssessmentIds.Count });
+                    case "archive": return Ok(new { message = "Bulk archive completed", affectedCount = request.AssessmentIds.Count });
 
-                    default:
-                        return BadRequest(new { message = "Invalid bulk action", supportedActions = new[] { "delete", "export", "archive" } });
+                    default: return BadRequest(new { message = "Invalid bulk action", supportedActions = new[] { "delete", "export", "archive" } });
                 }
             }
             catch (Exception ex)
@@ -422,6 +402,42 @@ namespace home_charging_assessment.Controllers
                 return StatusCode(500, new { message = "Error searching assessments", error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Delete user (admin only)
+        /// </summary>
+        [HttpDelete("users/{userId}")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            try
+            {
+                var user = await _authService.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
+
+                // Ne možeš obrisati sebe
+                var currentUserId = User.FindFirst("userId")?.Value;
+                if (currentUserId == userId)
+                {
+                    return BadRequest(new { message = "You cannot delete your own account" });
+                }
+
+                var deleted = await _authService.DeleteUserAsync(userId);
+                if (!deleted)
+                {
+                    return StatusCode(500, new { message = "Failed to delete user" });
+                }
+
+                return Ok(new { message = "User deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting user", error = ex.Message });
+            }
+        }
+
     }
 
     // Additional DTO for bulk actions

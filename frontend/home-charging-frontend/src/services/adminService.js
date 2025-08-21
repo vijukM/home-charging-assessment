@@ -175,7 +175,11 @@ async deleteAssessment(assessmentId, partitionKey) {
   async getUserAssessments(userId) {
     return await this.apiCall(this.endpoints.userAssessments(userId));
   }
-
+  async deleteUser(userId) {
+  return await this.apiCall(`${this.endpoints.users}/${userId}`, {
+    method: 'DELETE'
+  });
+  }
   // System Management
   async getSystemHealth() {
     return await this.apiCall(this.endpoints.systemHealth);
@@ -234,7 +238,7 @@ async deleteAssessment(assessmentId, partitionKey) {
       currentPage: assessment.CurrentPage || assessment.currentPage || 0,
       isComplete: assessment.IsComplete || assessment.isComplete || false,
       createdAt: assessment.CreatedAt || assessment.createdAt,
-      updatedAt: assessment.UpdatedAt || assessment.updatedAt
+      completedAt: assessment.CompletedAt || assessment.completedAt
     };
   }
 

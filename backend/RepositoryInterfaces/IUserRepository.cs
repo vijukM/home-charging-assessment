@@ -14,5 +14,6 @@ namespace home_charging_assessment.RepositoryInterfaces
         Task<bool> UsernameExistsAsync(string username);
         Task<bool> EmailExistsAsync(string email);
         Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<bool> DeleteAsync(string userId);
     }
 }
