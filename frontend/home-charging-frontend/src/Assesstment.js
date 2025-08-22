@@ -11,6 +11,56 @@ import Swal from 'sweetalert2';
 const phoneRegex = /\d{10,15}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Helper funkcija za mapiranje backend podataka na frontend format
+const mapBackendToFrontend = (backendData) => {
+  return {
+    id: backendData.id,
+    customerId: backendData.customerId,
+    PersonalInfo: {
+      FirstName: backendData.personalInfo?.firstName || '',
+      LastName: backendData.personalInfo?.lastName || '',
+      Email: backendData.personalInfo?.email || '',
+      Phone: backendData.personalInfo?.phone || ''
+    },
+    VehicleInfo: {
+      Brand: backendData.vehicleInfo?.brand || '',
+      BaseModel: backendData.vehicleInfo?.baseModel || '',
+      Model: backendData.vehicleInfo?.model || '',
+      Year: backendData.vehicleInfo?.year || new Date().getFullYear()
+    },
+    ElectricalPanelInfo: {
+      Location: backendData.electricalPanelInfo?.location || '',
+      MainBreakerCapacity: backendData.electricalPanelInfo?.mainBreakerCapacity || 0,
+      NumberOfOpenSlots: backendData.electricalPanelInfo?.numberOfOpenSlots || 0
+    },
+    ChargerInfo: {
+      Location: backendData.chargerInfo?.location || '',
+      DistanceFromPanelMeters: backendData.chargerInfo?.distanceFromPanelMeters || 0
+    },
+    HomeInfo: {
+      Address: {
+        Street: backendData.homeInfo?.address?.street || '',
+        StreetNumber: backendData.homeInfo?.address?.streetNumber || '',
+        City: backendData.homeInfo?.address?.city || '',
+        PostalCode: backendData.homeInfo?.address?.postalCode || '',
+        Country: backendData.homeInfo?.address?.country || ''
+      },
+      NumberOfHighEnergyDevices: backendData.homeInfo?.numberOfHighEnergyDevices || 0
+    },
+    EvChargerInfo: {
+      HasCharger: backendData.evChargerInfo?.hasCharger || false,
+      WantsToBuy: backendData.evChargerInfo?.wantsToBuy || false,
+      EvCharger: {
+        Brand: backendData.evChargerInfo?.evCharger?.brand || '',
+        Model: backendData.evChargerInfo?.evCharger?.model || '',
+        PowerKw: backendData.evChargerInfo?.evCharger?.powerKw || 0
+      }
+    },
+    CurrentPage: backendData.currentPage || 0,
+    IsComplete: backendData.isComplete || false
+  };
+};
+
 function App() {
   // Glavni state za assessment podatke
   const [assessment, setAssessment] = useState({
@@ -71,6 +121,11 @@ function App() {
   // NOVO - State za EvCharger podatke
   const [evChargers, setEvChargers] = useState([]);
   const [evChargerLoading, setEvChargerLoading] = useState(false);
+
+  // NOVO - State za incomplete assessment modal
+  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+  const [incompleteAssessment, setIncompleteAssessment] = useState(null);
+  const [checkingIncomplete, setCheckingIncomplete] = useState(false);
 
   // Jednostavan način - koristi samo najvažnije gradove
   const loadCitiesForCountry = (countryName) => {
@@ -149,6 +204,115 @@ function App() {
     // Izdvojiti jedinstvene snage i sortirati ih
     const powers = [...new Set(chargers.map(c => c.powerKw))].sort((a, b) => a - b);
     return powers;
+  };
+
+  // MODIFIKOVANO - Check for incomplete assessment when component loads
+  const checkForIncompleteAssessment = async () => {
+    setCheckingIncomplete(true);
+    
+    try {
+      const incomplete = await assessmentService.getIncompleteAssessment();
+      
+      if (incomplete) {
+        // Proveri da li assessment zaista nije complete
+        if (!incomplete.isComplete) {
+          setIncompleteAssessment(incomplete);
+          setShowIncompleteModal(true);
+          console.log('Found incomplete assessment:', incomplete);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for incomplete assessment:', error);
+      // Continue with normal flow if check fails
+    } finally {
+      setCheckingIncomplete(false);
+    }
+  };
+
+  // MODIFIKOVANO - Handle incomplete assessment modal responses
+  const handleContinueIncomplete = () => {
+    if (incompleteAssessment) {
+      // Mapiramo backend podatke na frontend format
+      const mappedAssessment = mapBackendToFrontend(incompleteAssessment);
+      
+      // Load the mapped assessment data
+      setAssessment(mappedAssessment);
+      
+      // Navigate to the page where user left off
+      setCurrentStep(mappedAssessment.CurrentPage || 0);
+      
+      // Mark previous steps as saved
+      const savedStepsSet = new Set();
+      for (let i = 0; i < (mappedAssessment.CurrentPage || 0); i++) {
+        savedStepsSet.add(i);
+      }
+      setSavedSteps(savedStepsSet);
+
+      // Ako je odabrana zemlja, učitaj gradove
+      if (mappedAssessment.HomeInfo?.Address?.Country) {
+        loadCitiesForCountry(mappedAssessment.HomeInfo.Address.Country);
+      }
+
+      console.log('Loaded incomplete assessment:', mappedAssessment);
+    }
+    
+    setShowIncompleteModal(false);
+    setIncompleteAssessment(null);
+  };
+
+  const handleStartNewAssessmentFromModal = () => {
+    // Reset everything and start fresh
+    setAssessment({
+      id: null,
+      customerId: null,
+      PersonalInfo: {
+        FirstName: '',
+        LastName: '', 
+        Email: '',
+        Phone: ''
+      },
+      VehicleInfo: {
+        Brand: '',
+        BaseModel: '',
+        Model: '',
+        Year: new Date().getFullYear()
+      },
+      ElectricalPanelInfo: {
+        Location: '',
+        MainBreakerCapacity: 0,
+        NumberOfOpenSlots: 0
+      },
+      ChargerInfo: {
+        Location: '',
+        DistanceFromPanelMeters: 0
+      },
+      HomeInfo: {
+        Address: {
+          Street: '',
+          StreetNumber: '',
+          City: '',
+          PostalCode: '',
+          Country: ''
+        },
+        NumberOfHighEnergyDevices: 0
+      },
+      EvChargerInfo: {
+        HasCharger: false,
+        WantsToBuy: false,
+        EvCharger: {
+          Brand: '',
+          Model: '',
+          PowerKw: 0
+        }
+      },
+      CurrentPage: 0,
+      IsComplete: false
+    });
+    
+    setSavedSteps(new Set());
+    setCurrentStep(-1);
+    setShowIncompleteModal(false);
+    setIncompleteAssessment(null);
   };
 
   // Funkcije za validaciju
@@ -653,85 +817,31 @@ const handleBackToHome = () => {
         PowerKw: 0
       }
     },
-      CurrentPage: 0,
-      IsComplete: false
-    });
-  };
-
-  // Handle charger purchase decision
-  const handleChargerDecision = (wantsToBuy) => {
-    if (wantsToBuy) {
-      // Redirect to purchase page
-      window.location.href = 'http://localhost:3000/purchase';
-    } else {
-      // Go back to start
-      setCurrentStep(-1);
-      // Reset assessment if needed
-                            setSavedSteps(new Set());
-                      setAssessment({
-        id: null,
-        customerId: null,
-        PersonalInfo: {
-          FirstName: '',
-          LastName: '', 
-          Email: '',
-          Phone: ''
-        },
-        VehicleInfo: {
-          Brand: '',
-          BaseModel: '',
-          Model: '',
-          Year: new Date().getFullYear()
-        },
-        ElectricalPanelInfo: {
-          Location: '',
-          MainBreakerCapacity: 0,
-          NumberOfOpenSlots: 0
-        },
-        ChargerInfo: {
-          Location: '',
-          DistanceFromPanelMeters: 0
-        },
-        HomeInfo: {
-          Address: {
-            Street: '',
-            StreetNumber: '',
-            City: '',
-            PostalCode: '',
-            Country: ''
-          },
-          NumberOfHighEnergyDevices: 0
-        },
-     EvChargerInfo: {
-      HasCharger: false,
-      WantsToBuy: false,
-      EvCharger: {
-        Brand: '',
-        Model: '',
-        PowerKw: 0
-      }
-    },
         CurrentPage: 0,
         IsComplete: false
       });
     }
   };
 
- useEffect(() => {
-  if (!authService.isLoggedIn()) {
-    setIsAuthenticated(false);
-    
-    // Prikaži SweetAlert2 samo jednom
-    if (!alertShown) {
-      setAlertShown(true);
-      showAuthAlert();
+  // IZMENJENO - useEffect za auth check i incomplete assessment proveru
+  useEffect(() => {
+    if (!authService.isLoggedIn()) {
+      setIsAuthenticated(false);
+      
+      // Prikaži SweetAlert2 samo jednom
+      if (!alertShown) {
+        setAlertShown(true);
+        showAuthAlert();
+      }
+      return;
     }
-    return;
-  }
 
-  setIsAuthenticated(true);
-  // ... ostatak logike
-}, [alertShown]);
+    setIsAuthenticated(true);
+    
+    // Check for incomplete assessment when authenticated
+    checkForIncompleteAssessment();
+    
+  }, [alertShown]);
 
 // Nova funkcija za prikaz alert-a
 const showAuthAlert = () => {
@@ -1395,145 +1505,6 @@ case 'EvChargerInfo':
         </div>
       )}
 
-      {/* No Charger Options - Inline */}
-      {stepData.HasCharger === false && (
-        <div className="inline-question">
-          <div className="question-row">
-            <div className="question-label">
-              <svg className="question-icon" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" fill="#06b6d4"/>
-                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>What would you like to do?</span>
-            </div>
-            
-            <div className="inline-options">
-              <div 
-                className={`inline-option ${stepData.WantsToBuy ? 'selected' : ''}`}
-                onClick={() => updateStepData('EvChargerInfo', 'WantsToBuy', true)}
-              >
-                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
-                  <rect x="2" y="3" width="20" height="14" rx="2" fill="#f59e0b"/>
-                  <circle cx="8" cy="21" r="2" fill="#f59e0b"/>
-                  <circle cx="16" cy="21" r="2" fill="#f59e0b"/>
-                  <path d="M6 6H22L20 16H8L6 6ZM6 6L4 2H2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span>Buy a Charger</span>
-              </div>
-
-              <div 
-                className={`inline-option ${!stepData.WantsToBuy ? 'selected' : ''}`}
-                onClick={() => {
-                  updateStepData('EvChargerInfo', 'WantsToBuy', false);
-                  updateStepData('EvChargerInfo', 'EvCharger', {
-                    Brand: '',
-                    Model: '',
-                    PowerKw: 0
-                  });
-                }}
-              >
-                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="3" fill="#8b5cf6"/>
-                  <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span>Get Recommendations</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Purchase Details - Inline */}
-      {stepData.HasCharger === false && stepData.WantsToBuy === true && (
-        <div className="inline-form purchase-form">
-          <div className="form-row">
-            <div className="form-label">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-ev-station-fill" viewBox="0 0 16 16">
-                <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V9c0-.258-.104-.377-.357-.635l-.007-.008C13.379 8.096 13 7.71 13 7V4a.5.5 0 0 1 .146-.354l.5-.5a.5.5 0 0 1 .708 0l.5.5A.5.5 0 0 1 15 4v8.5a1.5 1.5 0 1 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm2 .5v5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5m2.631 9.96H4.14v-.893h1.403v-.505H4.14v-.855h1.49v-.54H3.485V13h2.146zm1.316.54h.794l1.106-3.333h-.733l-.74 2.615h-.031l-.747-2.615h-.764z"/>
-              </svg>
-              <span>Select your preferred charger:</span>
-            </div>
-            
-            <div className="inline-inputs">
-              <div className="input-group">
-                <label>Brand</label>
-                {evChargerLoading ? (
-                  <select disabled>
-                    <option>Loading brands...</option>
-                  </select>
-                ) : (
-                  <select
-                    value={stepData.EvCharger?.Brand || ''}
-                    onChange={(e) => {
-                      const selectedBrand = e.target.value;
-                      updateStepData('EvChargerInfo', 'EvCharger', {
-                        Brand: selectedBrand,
-                        Model: '', // Reset model when brand changes
-                        PowerKw: 0 // Reset power when brand changes
-                      });
-                    }}
-                    required
-                  >
-                    <option value="">Choose brand</option>
-                    {uniqueBrands.map((brand, index) => (
-                      <option key={index} value={brand}>
-                        {brand}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              <div className="input-group">
-                <label>Model</label>
-                <select
-                  value={stepData.EvCharger?.Model || ''}
-                  onChange={(e) => {
-                    const selectedModel = e.target.value;
-                    updateStepData('EvChargerInfo', 'EvCharger', {
-                      ...stepData.EvCharger,
-                      Model: selectedModel,
-                      PowerKw: 0 // Reset power when model changes
-                    });
-                  }}
-                  disabled={!stepData.EvCharger?.Brand || evChargerLoading}
-                  required
-                >
-                  <option value="">Choose model</option>
-                  {uniqueModelsForBrand.map((model, index) => (
-                    <option key={index} value={model}>
-                      {model}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="input-group">
-                <label>Power</label>
-                <select
-                  value={stepData.EvCharger?.PowerKw || 0}
-                  onChange={(e) => {
-                    updateStepData('EvChargerInfo', 'EvCharger', {
-                      ...stepData.EvCharger,
-                      PowerKw: parseFloat(e.target.value)
-                    });
-                  }}
-                  disabled={!stepData.EvCharger?.Model || evChargerLoading}
-                  required
-                >
-                  <option value="0">Select power</option>
-                  {powerOptionsForModel.map((power, index) => (
-                    <option key={index} value={power}>
-                      {power} kW
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Recommendations Info - Inline */}
       {stepData.HasCharger === false && stepData.WantsToBuy === false && (
         <div className="inline-info">
@@ -1810,8 +1781,264 @@ case 'EvChargerInfo':
           </div>
         </div>
       )}
+
+      {/* NOVO - Incomplete Assessment Modal */}
+      {showIncompleteModal && (
+        <div className="modal-overlayq">
+          <div className="modal-contentq">
+            <div className="modal-headerq">
+              <div className="modal-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="#f39c12"/>
+                  <path d="M12 16v-4M12 8h.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <h2>Incomplete Assessment Found</h2>
+              <p>We found that you have an incomplete assessment. Would you like to continue where you left off, or start a new assessment?</p>
+            </div>
+            
+            <div className="modal-body">
+              {incompleteAssessment && (
+                <div className="assessment-progress">
+                  <p><strong>Last saved step:</strong> Step {(incompleteAssessment.currentPage || 0) + 1} of {steps.length}</p>
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill" 
+                      style={{ 
+                        width: `${((incompleteAssessment.currentPage || 0) / steps.length) * 100}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary modal-btn"
+                onClick={handleStartNewAssessmentFromModal}
+              >
+                Start New Assessment
+              </button>
+              <button 
+                className="btn btn-primary modal-btn"
+                onClick={handleContinueIncomplete}
+              >
+                Continue Previous Assessment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOVO - Loading overlay for checking incomplete assessment */}
+      {checkingIncomplete && (
+        <div className="modal-overlayq">
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Checking for previous assessments...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default App;
+export default App;EvCharger?.Model || ''}
+                  onChange={(e) => {
+                    const selectedModel = e.target.value;
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      Model: selectedModel,
+                      PowerKw: 0 // Reset power when model changes
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Brand || evChargerLoading}
+                  required
+                >
+                  <option value="">Choose model</option>
+                  {uniqueModelsForBrand.map((model, index) => (
+                    <option key={index} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="input-group">
+                <label>Power</label>
+                <select
+                  value={stepData.EvCharger?.PowerKw || 0}
+                  onChange={(e) => {
+                    updateStepData('EvChargerInfo', 'EvCharger', {
+                      ...stepData.EvCharger,
+                      PowerKw: parseFloat(e.target.value)
+                    });
+                  }}
+                  disabled={!stepData.EvCharger?.Model || evChargerLoading}
+                  required
+                >
+                  <option value="0">Select power</option>
+                  {powerOptionsForModel.map((power, index) => (
+                    <option key={index} value={power}>
+                      {power} kW
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Charger Options - Inline */}
+      {stepData.HasCharger === false && (
+        <div className="inline-question">
+          <div className="question-row">
+            <div className="question-label">
+              <svg className="question-icon" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#06b6d4"/>
+                <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>What would you like to do?</span>
+            </div>
+            
+            <div className="inline-options">
+              <div 
+                className={`inline-option ${stepData.WantsToBuy ? 'selected' : ''}`}
+                onClick={() => updateStepData('EvChargerInfo', 'WantsToBuy', true)}
+              >
+                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="3" width="20" height="14" rx="2" fill="#f59e0b"/>
+                  <circle cx="8" cy="21" r="2" fill="#f59e0b"/>
+                  <circle cx="16" cy="21" r="2" fill="#f59e0b"/>
+                  <path d="M6 6H22L20 16H8L6 6ZM6 6L4 2H2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Buy a Charger</span>
+              </div>
+
+              <div 
+                className={`inline-option ${!stepData.WantsToBuy ? 'selected' : ''}`}
+                onClick={() => {
+                  updateStepData('EvChargerInfo', 'WantsToBuy', false);
+                  updateStepData('EvChargerInfo', 'EvCharger', {
+                    Brand: '',
+                    Model: '',
+                    PowerKw: 0
+                  });
+                }}
+              >
+                <svg className="option-icon" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="3" fill="#8b5cf6"/>
+                  <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Get Recommendations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Details - Inline */}
+      {stepData.HasCharger === false && stepData.WantsToBuy === true && (
+        <div className="inline-form purchase-form">
+          <div className="form-row">
+            <div className="form-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-ev-station-fill" viewBox="0 0 16 16">
+                <path d="M1 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1 2 2v.5a.5.5 0 0 0 1 0V9c0-.258-.104-.377-.357-.635l-.007-.008C13.379 8.096 13 7.71 13 7V4a.5.5 0 0 1 .146-.354l.5-.5a.5.5 0 0 1 .708 0l.5.5A.5.5 0 0 1 15 4v8.5a1.5 1.5 0 1 1-3 0V12a1 1 0 0 0-1-1v4h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1zm2 .5v5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5m2.631 9.96H4.14v-.893h1.403v-.505H4.14v-.855h1.49v-.54H3.485V13h2.146zm1.316.54h.794l1.106-3.333h-.733l-.74 2.615h-.031l-.747-2.615h-.764z"/>
+              </svg>
+              <span>Select your preferred charger:</span>
+            </div>
+            
+            <div className="inline-inputs">
+              <div className="input-group">
+                <label>Brand</label>
+                {evChargerLoading ? (
+                  <select disabled>
+                    <option>Loading brands...</option>
+                  </select>
+                ) : (
+                  <select
+                    value={stepData.EvCharger?.Brand || ''}
+                    onChange={(e) => {
+                      const selectedBrand = e.target.value;
+                      updateStepData('EvChargerInfo', 'EvCharger', {
+                        Brand: selectedBrand,
+                        Model: '', // Reset model when brand changes
+                        PowerKw: 0 // Reset power when brand changes
+                      });
+                    }}
+                    required
+                  >
+                    <option value="">Choose brand</option>
+                    {uniqueBrands.map((brand, index) => (
+                      <option key={index} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="input-group">
+                <label>Model</label>
+                <select
+                  value={stepData.: false,
+      WantsToBuy: false,
+      EvCharger: {
+        Brand: '',
+        Model: '',
+        PowerKw: 0
+      }
+    },
+      CurrentPage: 0,
+      IsComplete: false
+    });
+  };
+
+  // Handle charger purchase decision
+  const handleChargerDecision = (wantsToBuy) => {
+    if (wantsToBuy) {
+      // Redirect to purchase page
+      window.location.href = 'http://localhost:3000/purchase';
+    } else {
+      // Go back to start
+      setCurrentStep(-1);
+      // Reset assessment if needed
+                            setSavedSteps(new Set());
+                      setAssessment({
+        id: null,
+        customerId: null,
+        PersonalInfo: {
+          FirstName: '',
+          LastName: '', 
+          Email: '',
+          Phone: ''
+        },
+        VehicleInfo: {
+          Brand: '',
+          BaseModel: '',
+          Model: '',
+          Year: new Date().getFullYear()
+        },
+        ElectricalPanelInfo: {
+          Location: '',
+          MainBreakerCapacity: 0,
+          NumberOfOpenSlots: 0
+        },
+        ChargerInfo: {
+          Location: '',
+          DistanceFromPanelMeters: 0
+        },
+        HomeInfo: {
+          Address: {
+            Street: '',
+            StreetNumber: '',
+            City: '',
+            PostalCode: '',
+            Country: ''
+          },
+          NumberOfHighEnergyDevices: 0
+        },
+     EvChargerInfo: {
+      HasCharger

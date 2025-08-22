@@ -9,6 +9,7 @@ namespace home_charging_assessment.ServiceInterfaces
         Task<Assessment?> GetAsync(string id, string partitionKey);
         Task<Assessment> UpdateAsync(string id, string partitionKey, Assessment updated);
         Task<bool> DeleteAsync(string id, string partitionKey);
+        Task<Assessment?> GetIncompleteAssessmentByUserIdAsync(string userId);
 
         Task<PagedResult<AssessmentSummaryDto>> GetAssessmentsAsync(AssessmentFilterDto filters);
         Task<AssessmentStats> GetAssessmentStatsAsync();

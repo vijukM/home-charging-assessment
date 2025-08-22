@@ -72,7 +72,22 @@ namespace home_charging_assessment.Services
                 PageSize = filters.PageSize
             };
         }
-
+        public async Task<Assessment?> GetIncompleteAssessmentByUserIdAsync(string userId)
+        {
+            try
+            {
+                var userAssessments = await _repo.GetAssessmentsByUserIdAsync(userId);
+                var incompleteAssessment = userAssessments
+                    .Where(a => !a.IsComplete)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .FirstOrDefault();
+                return incompleteAssessment;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error getting incomplete assessment for user {userId}: {ex.Message}");
+            }
+        }
         public async Task<AssessmentStats> GetAssessmentStatsAsync()
         {
             var allAssessments = await _repo.GetAllAssessmentsAsync();
@@ -440,5 +455,7 @@ namespace home_charging_assessment.Services
                 Completed = monthlyData.Select(m => m.Completed).ToList()
             };
         }
+
+
     }
 }

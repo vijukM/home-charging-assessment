@@ -16,5 +16,6 @@ namespace home_charging_assessment.ServiceInterfaces
         Task<User?> GetUserByIdAsync(string userId);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<bool> DeleteUserAsync(string userId);
+        Task<User?> UpdateUserAsync(string userId, UpdateUserDto updateUserDto);
     }
 }

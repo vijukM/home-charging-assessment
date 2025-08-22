@@ -85,9 +85,9 @@ function Navbar() {
     
     Swal.fire({
       title: 'Welcome!',
-      text: 'Redirecting to assessment...',
+      text: 'You’re all set. Let’s get started!',
       icon: 'success',
-      timer: 1500,
+      timer: 2200,
       showConfirmButton: false,
       customClass: {
         popup: 'success-alert-popup'

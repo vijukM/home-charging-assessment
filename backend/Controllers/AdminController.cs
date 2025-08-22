@@ -438,6 +438,54 @@ namespace home_charging_assessment.Controllers
             }
         }
 
+        /// <summary>
+        /// Update user data (admin only)
+        /// </summary>
+        [HttpPut("users/{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                var existingUser = await _authService.GetUserByIdAsync(userId);
+                if (existingUser == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
+
+                // Ne možeš update-ovati sebe ako menjaš isActive na false
+                var currentUserId = User.FindFirst("userId")?.Value;
+                if (currentUserId == userId && !updateUserDto.IsActive)
+                {
+                    return BadRequest(new { message = "You cannot deactivate your own account" });
+                }
+
+                var updatedUser = await _authService.UpdateUserAsync(userId, updateUserDto);
+                if (updatedUser == null)
+                {
+                    return StatusCode(500, new { message = "Failed to update user" });
+                }
+
+                return Ok(new
+                {
+                    message = "User updated successfully",
+                    user = new UserDto
+                    {
+                        Id = updatedUser.Id,
+                        Username = updatedUser.Username,
+                        Email = updatedUser.Email,
+                        EmailVerified = updatedUser.EmailVerified,
+                        Roles = updatedUser.Roles,
+                        CreatedAt = updatedUser.CreatedAt,
+                        LastLogin = updatedUser.LastLogin,
+                        IsActive = updatedUser.IsActive
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating user", error = ex.Message });
+            }
+        }
     }
 
     // Additional DTO for bulk actions

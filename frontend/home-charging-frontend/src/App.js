@@ -63,7 +63,7 @@ function Home() {
       title: 'Welcome!',
       text: 'Redirecting to assessment...',
       icon: 'success',
-      timer: 1500,
+      timer: 2000,
       showConfirmButton: false,
       customClass: {
         popup: 'success-alert-popup'

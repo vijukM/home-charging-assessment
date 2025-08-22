@@ -356,5 +356,62 @@ namespace home_charging_assessment.Services
                 return false;
             }
         }
+        public async Task<User?> UpdateUserAsync(string userId, UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return null;
+                }
+
+                // Proveri da li username već postoji (osim za trenutnog korisnika)
+                if (!string.IsNullOrEmpty(updateUserDto.Username) && user.Username != updateUserDto.Username)
+                {
+                    var existingUser = await _userRepository.GetByUsernameAsync(updateUserDto.Username);
+                    if (existingUser != null && existingUser.Id != userId)
+                    {
+                        throw new InvalidOperationException("Username already exists");
+                    }
+                }
+
+                // Proveri da li email već postoji (osim za trenutnog korisnika)
+                if (!string.IsNullOrEmpty(updateUserDto.Email) && user.Email != updateUserDto.Email)
+                {
+                    var existingUser = await _userRepository.GetByEmailAsync(updateUserDto.Email);
+                    if (existingUser != null && existingUser.Id != userId)
+                    {
+                        throw new InvalidOperationException("Email already exists");
+                    }
+                }
+
+                // Update user properties
+                user.Username = updateUserDto.Username ?? user.Username;
+                user.Email = updateUserDto.Email ?? user.Email;
+                user.EmailVerified = updateUserDto.EmailVerified;
+                user.IsActive = updateUserDto.IsActive;
+
+                // Update roles
+                if (updateUserDto.Roles != null && updateUserDto.Roles.Any())
+                {
+                    user.Roles = updateUserDto.Roles;
+                }
+
+                var updatedUser = await _userRepository.UpdateAsync(user);
+
+                if (updatedUser != null)
+                {
+                    _logger.LogInformation("User {UserId} ({Username}) was updated", userId, user.Username);
+                }
+
+                return updatedUser;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user {UserId}", userId);
+                throw;
+            }
+        }
     }
 }

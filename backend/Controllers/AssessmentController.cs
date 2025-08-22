@@ -62,9 +62,28 @@ namespace home_charging_assessment.Controllers
             var result = await _service.UpdateAsync(id, partitionKey, updated);
             return Ok(result);
         }
+        [HttpGet("incomplete")]
+        public async Task<IActionResult> GetIncompleteAssessment()
+        {
+            var userId = User.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Pozovi service metod da pronađe incomplete assessment za korisnika
+            var incompleteAssessment = await _service.GetIncompleteAssessmentByUserIdAsync(userId);
+
+            if (incompleteAssessment == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(incompleteAssessment);
+        }
 
         [HttpGet("my-assessments")]
-        [Authorize(Roles = UserRoles.User)]
         public async Task<IActionResult> GetMyAssessments()
         {
             var userId = User.FindFirst("userId")?.Value;

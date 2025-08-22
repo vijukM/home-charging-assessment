@@ -171,7 +171,12 @@ async deleteAssessment(assessmentId, partitionKey) {
       body: JSON.stringify({ roles })
     });
   }
-
+  async updateUser(userId, userData) {
+    return await this.apiCall(`${this.endpoints.users}/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData)
+    });
+  }
   async getUserAssessments(userId) {
     return await this.apiCall(this.endpoints.userAssessments(userId));
   }

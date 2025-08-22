@@ -78,4 +78,13 @@ namespace home_charging_assessment.Models.DTOs
         [MinLength(6)]
         public string NewPassword { get; set; } = string.Empty;
     }
+
+    public class UpdateUserDto
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool EmailVerified { get; set; }
+        public bool IsActive { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
+    }
 }

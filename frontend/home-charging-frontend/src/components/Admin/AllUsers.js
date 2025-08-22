@@ -289,11 +289,11 @@ const ViewAssessmentModal = ({ assessment, onClose, onSave }) => {
         getFieldValue(formData, 'customerId', 'CustomerId'),
         'text',
         null,
-        isEditing ? (e) => {
+        null,
+         isEditing ? (e) => {
           setFormData(prev => ({ ...prev, CustomerId: e.target.value, customerId: e.target.value }));
           setSaved(false);
-        } : null
-      )}
+        } : null      )}
       {renderField(
         'First Name',
         getFieldValue(formData, 'personalInfo.firstName', 'PersonalInfo.FirstName'),
@@ -723,88 +723,242 @@ const RolesBadge = ({ roles }) => {
   );
 };
 
-// View User Modal sa osnovnim stilom
-const ViewUserModal = ({ user, onClose }) => {
-  return (
-    <BaseModal className="view-modal" onClose={onClose}>
-      <div className="modal-header">
-        <div className="modal-title-section">
-          <h2>User Details</h2>
-          <p>Complete information for {user.username || user.email}</p>
-        </div>
-        <button className="btn-close" onClick={onClose}>
-          <i className="fas fa-times"></i>
-        </button>
+// View User Modal sa edit funkcionalnosću
+const ViewUserModal = ({ user, onClose, onUserUpdated }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(user || {});
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData(user);
+    }
+  }, [user]);
+
+const handleInputChange = (field, value) => {
+  setFormData(prev => {
+    const newData = { ...prev, [field]: value };
+    
+    // Ako se menja primaryRole, ažuriraj i roles array
+    if (field === 'primaryRole') {
+      newData.roles = [value];
+    }
+    
+    return newData;
+  });
+  setSaved(false);
+}
+
+const handleSave = async () => {
+  setLoading(true);
+  try {
+    // Pripremi podatke za slanje
+    const userData = {
+      username: formData.username,
+      email: formData.email,
+      emailVerified: formData.emailVerified === 'true' || formData.emailVerified === true,
+      isActive: formData.isActive === 'true' || formData.isActive === true,
+      roles: [formData.primaryRole || formData.roles?.[0] || 'User'] // Osiguraj da uvek imamo role
+    };
+
+    console.log('Sending user data:', userData);
+
+    // Pozovi adminService.updateUser
+    const response = await adminService.updateUser(formData.id, userData);
+    
+    console.log('Update response:', response);
+
+    // Ažuriraj formData sa response podatcima ako su dostupni
+    if (response.user) {
+      setFormData(prev => ({
+        ...prev,
+        ...response.user,
+        primaryRole: response.user.roles?.[0] || 'User'
+      }));
+    }
+    
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+    setIsEditing(false);
+    
+    // VAŽNO: Pozovi callback funkciju da obavestiš parent komponentu
+    if (onUserUpdated && response.user) {
+      onUserUpdated(response.user);
+    }
+    
+  } catch (error) {
+    alert('Error saving user data: ' + (error.message || 'Unknown error'));
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+    if (isEditing) {
+      setFormData(user);
+      setSaved(false);
+    }
+  };
+
+  const renderField = (label, value, fieldName, type = 'text', options = null) => {
+    if (!isEditing) {
+      return (
+        <span>{value || '—'}</span>
+      );
+    }
+
+    return (
+      <div className="edit-field">
+        {type === 'select' ? (
+          <select 
+            value={value || ''} 
+            onChange={(e) => handleInputChange(fieldName, e.target.value)}
+            className="edit-input"
+          >
+            {options.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type={type}
+            value={value || ''}
+            onChange={(e) => handleInputChange(fieldName, e.target.value)}
+            className="edit-input"
+          />
+        )}
       </div>
-      
+    );
+  };
+
+  return (
+    <BaseModal className="view-modal user-profile-modal" onClose={onClose}>
       <div className="modal-body">
-        <div className="user-details">
-          {/* Basic Info */}
-          <div className="detail-section">
-            <h3><i className="fas fa-user"></i>Basic Information</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <label>User ID:</label>
-                <span className="user-id">{user.id}</span>
-              </div>
-              <div className="detail-item">
-                <label>Username:</label>
-                <span>{user.username || '—'}</span>
-              </div>
-              <div className="detail-item">
-                <label>Email:</label>
-                <span className="email-value">{user.email}</span>
-              </div>
-              <div className="detail-item">
-                <label>Email Verified:</label>
-                <span className={`status-indicator ${user.emailVerified ? 'positive' : 'negative'}`}>
-                  {user.emailVerified ? 'Yes' : 'No'}
-                </span>
-              </div>
-              <div className="detail-item">
-                <label>Account Status:</label>
-                <span className={`status-indicator ${user.isActive ? 'positive' : 'negative'}`}>
-                  {user.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            </div>
+        {/* Profile Section */}
+        <div className="profile-section">
+          <div className="profile-avatar">
+            <i className="fas fa-user"></i>
+          </div>
+          <h2 className="profile-username">{formData.username || 'Unknown User'}</h2>
+          
+          {/* Edit Toggle Button */}
+          <div className="edit-actions">
+            {saved && (
+              <span className="saved-indicator">
+                <i className="fas fa-check"></i> Saved
+              </span>
+            )}
+            <button 
+              className={`edit-toggle ${isEditing ? 'active' : ''}`}
+              onClick={toggleEdit}
+              title={isEditing ? 'Cancel Edit' : 'Edit User'}
+            >
+              <i className={`fas ${isEditing ? 'fa-times' : 'fa-edit'}`}></i>
+            </button>
+          </div>
+        </div>
+
+        {/* User Details Grid */}
+        <div className="user-details-grid">
+          {/* Row 1 - User ID (spans 2 columns) */}
+          <div className={`detail-row full-width ${isEditing ? 'editing' : ''}`}>
+            <label>User ID:</label>
+            <span className="user-id-value">{formData.id}</span>
           </div>
 
-          {/* Roles & Permissions */}
-          <div className="detail-section">
-            <h3><i className="fas fa-shield-alt"></i>Roles & Permissions</h3>
-            <div className="detail-grid">
-              <div className="detail-item roles-section">
-                <label>Assigned Roles:</label>
-                <div className="roles-display">
-                  {user.roles && user.roles.length > 0 ? (
-                    user.roles.map((role, index) => (
-                      <span key={index} className={`role-badge ${role.toLowerCase()}`}>
-                        {role}
+          {/* Row 2 - Username and Email */}
+          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+            <div className="detail-column">
+              <label>Username:</label>
+              {renderField('Username', formData.username, 'username')}
+            </div>
+            <div className="detail-column">
+              <label>Email:</label>
+              <div className="email-with-verification">
+                {isEditing ? (
+                  renderField('Email', formData.email, 'email', 'email')
+                ) : (
+                  <>
+                    <span className="email-text">{formData.email}</span>
+                    {formData.emailVerified ? (
+                      <span 
+                        className="verification-status verified" 
+                        title="Email is verified"
+                      >
+                        <i className="fas fa-check-circle"></i>
                       </span>
-                    ))
-                  ) : (
-                    <span className="role-badge user">User</span>
-                  )}
-                </div>
+                    ) : (
+                      <span 
+                        className="verification-status unverified" 
+                        title="Email is not verified"
+                      >
+                        <i className="fas fa-exclamation-triangle"></i>
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Account Activity */}
-          <div className="detail-section">
-            <h3><i className="fas fa-clock"></i>Account Activity</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <label>Created At:</label>
-                <span className="date-value">{formatDate(user.createdAt)}</span>
-              </div>
-              <div className="detail-item">
-                <label>Last Login:</label>
-                <span className="date-value">{formatDate(user.lastLogin)}</span>
-              </div>
+          {/* Row 3 - Status and Role */}
+          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+            <div className="detail-column">
+              <label>Status:</label>
+              {isEditing ? (
+                renderField('Status', formData.isActive ? 'true' : 'false', 'isActive', 'select', [
+                  { value: 'true', label: 'Active' },
+                  { value: 'false', label: 'Inactive' }
+                ])
+              ) : (
+                <StatusBadge user={formData} />
+              )}
+            </div>
+            <div className="detail-column">
+              <label>Primary Role:</label>
+              {isEditing ? (
+                renderField('Role', formData.roles?.[0] || 'User', 'primaryRole', 'select', [
+                  { value: 'User', label: 'User' },
+                  { value: 'Admin', label: 'Admin' },
+                  { value: 'Moderator', label: 'Moderator' },
+                  { value: 'Manager', label: 'Manager' }
+                ])
+              ) : (
+                <PrimaryRoleBadge roles={formData.roles} />
+              )}
             </div>
           </div>
+
+          {/* Row 4 - Created At and Last Login */}
+          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+            <div className="detail-column">
+              <label>Created At:</label>
+              <span className="date-value">{formatDate(formData.createdAt)}</span>
+            </div>
+            <div className="detail-column">
+              <label>Last Login:</label>
+              <span className="date-value">{formatDate(formData.lastLogin)}</span>
+            </div>
+          </div>
+
+          {/* Row 5 - Email Verified (samo u edit modu) */}
+          {isEditing && (
+            <div className="detail-row two-columns editing">
+              <div className="detail-column">
+                <label>Email Verified:</label>
+                {renderField('Email Verified', formData.emailVerified ? 'true' : 'false', 'emailVerified', 'select', [
+                  { value: 'true', label: 'Verified' },
+                  { value: 'false', label: 'Not Verified' }
+                ])}
+              </div>
+              <div className="detail-column">
+                {/* Prazan prostor */}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
@@ -812,10 +966,29 @@ const ViewUserModal = ({ user, onClose }) => {
         <button className="btn-secondary" onClick={onClose}>
           <i className="fas fa-times"></i> Close
         </button>
+        {isEditing && (
+          <button 
+            className="btn-primary" 
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i> Save Changes
+              </>
+            )}
+          </button>
+        )}
       </div>
     </BaseModal>
   );
 };
+
+
 
 // Glavni AllUsers komponenta
 function AllUsers() {
@@ -854,6 +1027,21 @@ function AllUsers() {
   const [viewModal, setViewModal] = useState({ open: false, user: null });
   const [viewAssessmentModal, setViewAssessmentModal] = useState({ open: false, assessment: null });
   const [deleteModal, setDeleteModal] = useState({ open: false, user: null, loading: false });
+
+  // NOVA funkcija za ažuriranje korisnika u listi
+  const handleUserUpdated = (updatedUser) => {
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === updatedUser.id ? { ...user, ...updatedUser } : user
+      )
+    );
+    
+    // Ažuriraj i modal sa novim podacima
+    setViewModal(prev => ({
+      ...prev,
+      user: { ...prev.user, ...updatedUser }
+    }));
+  };
 
   // Handler funkcije za brisanje korisnika
   const handleDeleteUser = (user) => {
@@ -1404,6 +1592,7 @@ function AllUsers() {
         <ViewUserModal 
           user={viewModal.user}
           onClose={() => setViewModal({ open: false, user: null })}
+          onUserUpdated={handleUserUpdated}
         />
       )}
 

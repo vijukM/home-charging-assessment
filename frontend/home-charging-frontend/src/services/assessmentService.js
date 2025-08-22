@@ -96,6 +96,30 @@ class AssessmentService {
       throw error;
     }
   }
+
+   async getIncompleteAssessment() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/assessment/incomplete`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Please log in to view assessments');
+        }
+        if (response.status === 404) {
+          return null; // No incomplete assessment found
+        }
+        throw new Error(`Failed to get incomplete assessment: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 }
 
 export default new AssessmentService();
