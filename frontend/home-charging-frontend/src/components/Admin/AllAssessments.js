@@ -97,14 +97,21 @@ const BaseModal = ({ children, className = '', onClose }) => {
   );
 };
 
-// Helper komponenta za status badge
 const StatusBadge = ({ assessment }) => {
   const isComplete = getFieldValue(assessment, 'isComplete', 'IsComplete', false);
-  const currentPage = getFieldValue(assessment, 'currentPage', 'CurrentPage', 0);
   
-  if (isComplete) return <span className="status-badge completed">Završen</span>;
-  if (currentPage === 0) return <span className="status-badge abandoned">Odustao</span>;
-  return <span className="status-badge incomplete">U toku</span>;
+  return (
+    <div className="status-cell">
+      {isComplete ? (
+        <span className="status-badge completed">Completed</span>
+      ) : (
+        <>
+          <span className="status-badge incomplete">In progress</span>
+          <EmailReminderButton assessment={assessment} />
+        </>
+      )}
+    </div>
+  );
 };
 
 // Helper komponenta za progress bar
@@ -121,6 +128,64 @@ const ProgressBar = ({ currentPage, totalPages = 6 }) => (
     </span>
   </div>
 );
+
+const EmailReminderButton = ({ assessment }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  
+  // Only show for incomplete assessments
+  const isComplete = getFieldValue(assessment, 'isComplete', 'IsComplete', false);
+  if (isComplete) return null;
+
+  // Get required data
+  const assessmentId = assessment.id;
+  const customerId = getFieldValue(assessment, 'customerId', 'CustomerId');
+  
+  const handleSendReminder = async () => {
+    if (isLoading || isSent) return;
+
+    try {
+      setIsLoading(true);
+      
+      const result = await adminService.sendAssessmentReminder(assessmentId, customerId);
+      
+      console.log('Reminder sent successfully:', result);
+      setIsSent(true);
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setIsSent(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Failed to send reminder:', error);
+      alert('Failed to send reminder: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className={`email-reminder-btn ${isSent ? 'sent' : ''} ${isLoading ? 'loading' : ''}`}
+      onClick={handleSendReminder}
+      disabled={isLoading || isSent}
+      title={
+        isSent ? "Reminder sent!" : 
+        isLoading ? "Sending..." : 
+        "Send reminder email"
+      }
+    >
+      {isLoading ? (
+        <i className="fas fa-spinner fa-spin"></i>
+      ) : isSent ? (
+        <i className="fas fa-check"></i>
+      ) : (
+        <i className="fas fa-envelope"></i>
+      )}
+    </button>
+  );
+};
 
 const ViewAssessmentModal = ({ assessment, onClose, onSave }) => {
   const [activeSection, setActiveSection] = useState('Personal Info');
@@ -1214,45 +1279,106 @@ function AllAssessments() {
           </div>
           
           <div className="pagination">
-            <button 
-              className="page-btn"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              Previous
-            </button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let page;
-              if (totalPages <= 5) {
-                page = i + 1;
-              } else if (currentPage <= 3) {
-                page = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                page = totalPages - 4 + i;
-              } else {
-                page = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={page}
-                  className={`page-btn ${currentPage === page ? 'active' : ''}`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              );
-            })}
-            
-            <button 
-              className="page-btn"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next
-            </button>
-          </div>
+  {/* Go to first page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage(1)}
+    title="First page"
+  >
+    <i className="fas fa-angle-double-left"></i>
+  </button>
+  
+  {/* Previous page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage(currentPage - 1)}
+    title="Previous page"
+  >
+    <i className="fas fa-angle-left"></i>
+  </button>
+  
+  {/* Page numbers - always show 2 numbers */}
+  {(() => {
+    const pageNumbers = [];
+    
+    if (totalPages <= 2) {
+      // If total pages is 1 or 2, show all
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else if (currentPage === 1) {
+      // If on first page, show 1, 2
+      pageNumbers.push(1, 2);
+    } else if (currentPage === totalPages) {
+      // If on last page, show last-1, last
+      pageNumbers.push(totalPages - 1, totalPages);
+    } else {
+      // If in middle, show current-1, current
+      pageNumbers.push(currentPage - 1, currentPage);
+    }
+    
+    return pageNumbers.map((page, index) => (
+      <button
+        key={page}
+        className={`page-btn ${currentPage === page ? 'active' : ''}`}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </button>
+    ));
+  })()}
+  
+  {/* Show dots only if there's a gap between displayed pages and last page */}
+  {(() => {
+    const lastDisplayedPage = currentPage === 1 ? 2 : 
+                             currentPage === totalPages ? totalPages - 1 : 
+                             currentPage;
+    
+    // Show dots only if there's at least one page between last displayed and total pages
+    return totalPages > 2 && lastDisplayedPage < totalPages - 1 && (
+      <span className="page-dots">...</span>
+    );
+  })()}
+  
+  {/* Show last page if there's a gap */}
+  {(() => {
+    const lastDisplayedPage = currentPage === 1 ? 2 : 
+                             currentPage === totalPages ? totalPages - 1 : 
+                             currentPage;
+    
+    // Show last page only if there's at least one page between last displayed and total pages
+    return totalPages > 2 && lastDisplayedPage < totalPages - 1 && (
+      <button
+        className="page-btn"
+        onClick={() => setCurrentPage(totalPages)}
+      >
+        {totalPages}
+      </button>
+    );
+  })()}
+  
+  {/* Next page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage(currentPage + 1)}
+    title="Next page"
+  >
+    <i className="fas fa-angle-right"></i>
+  </button>
+  
+  {/* Go to last page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage(totalPages)}
+    title="Last page"
+  >
+    <i className="fas fa-angle-double-right"></i>
+  </button>
+</div>
         </div>
       </div>
 

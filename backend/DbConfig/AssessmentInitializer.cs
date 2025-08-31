@@ -385,8 +385,8 @@ namespace home_charging_assessment.DbConfig
                         {
                             Street = "Alexanderplatz",
                             StreetNumber = "12",
-                            City = "Berlin",
-                            PostalCode = "10178",
+                            City = "Frankfurt",
+                            PostalCode = "60313",
                             Country = "Germany"
                         },
                         NumberOfHighEnergyDevices = 3

@@ -13,7 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -43,10 +42,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure JWT Settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
-// Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
@@ -72,39 +69,28 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add Authorization with policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireRole(UserRoles.Admin));
     options.AddPolicy("UserOrAdmin", policy => policy.RequireRole(UserRoles.User, UserRoles.Admin));
 });
 
-// Cosmos DB setup
 var cosmosConfig = builder.Configuration.GetSection("CosmosDb");
 var cosmosClient = new CosmosClient(cosmosConfig["Endpoint"], cosmosConfig["Key"]);
 builder.Services.AddSingleton(cosmosClient);
 
-// Create database and containers
 var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(cosmosConfig["DatabaseId"]);
 
-// Create assessments container
-await dbResponse.Database.CreateContainerIfNotExistsAsync(
-    cosmosConfig["ContainerId"],
-    cosmosConfig["PartitionKeyPath"]);
+await dbResponse.Database.CreateContainerIfNotExistsAsync(cosmosConfig["ContainerId"],cosmosConfig["PartitionKeyPath"]);
 
-// Create users container
-await dbResponse.Database.CreateContainerIfNotExistsAsync(
-    cosmosConfig["UserContainerId"],
-    "/partitionKey");
+await dbResponse.Database.CreateContainerIfNotExistsAsync( cosmosConfig["UserContainerId"], "/partitionKey");
 
-// Register repositories
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IChargerLocationRepository, ChargerLocationRepository>();
 builder.Services.AddScoped<IPanelLocationRepository, PanelLocationRepository>();
 builder.Services.AddScoped<IEvChargerRepository, EvChargerRepository>();
 
-// Register services
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -112,7 +98,6 @@ builder.Services.AddScoped<IChargerLocationService, ChargerLocationService>();
 builder.Services.AddScoped<IPanelLocationService, PanelLocationService>();
 builder.Services.AddScoped<IEvChargerService, EvChargerService>();
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", builder =>
@@ -125,13 +110,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize data
-using (var scope = app.Services.CreateScope())
-{
-    await ChargerLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "chargerLocation", "/id");
-    await PanelLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "panelLocation", "/id");
-    await EvChargerInitializer.InitializeAsync(cosmosClient, "TestDb", "evCharger", "/id");
-    await AssessmentInitializer.InitializeAsync(cosmosClient, "TestDb", "assessments", "/customerId");
+    using (var scope = app.Services.CreateScope())
+    {
+        await AssessmentInitializer.InitializeAsync(cosmosClient, "TestDb", "assessments", "/customerId");
+        await ChargerLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "chargerLocation", "/id");
+        await PanelLocationInitializer.InitializeAsync(cosmosClient, "TestDb", "panelLocation", "/id");
+        await EvChargerInitializer.InitializeAsync(cosmosClient, "TestDb", "evCharger", "/id");
+        await RandomAssessmentGenerator.PopulateRandomAssessmentsAsync(cosmosClient, "TestDb", "assessments", "/customerId");
 
 }
 
@@ -143,7 +128,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowReact");
 
-// Add authentication middleware BEFORE authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

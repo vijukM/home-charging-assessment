@@ -171,6 +171,15 @@ async deleteAssessment(assessmentId, partitionKey) {
       body: JSON.stringify({ roles })
     });
   }
+
+  async sendAssessmentReminder(assessmentId, partitionKey) {
+  if (!partitionKey) throw new Error('PartitionKey (customerId) is required');
+  const params = `?partitionKey=${encodeURIComponent(partitionKey)}`;
+  return await this.apiCall(`${this.endpoints.assessments}/${assessmentId}/send-reminder${params}`, {
+        method: 'POST'
+      });
+    }
+
   async updateUser(userId, userData) {
     return await this.apiCall(`${this.endpoints.users}/${userId}`, {
       method: 'PUT',

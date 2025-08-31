@@ -7,7 +7,6 @@
 .App {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
-  min-height: 100vh;
   padding: 20px;
   background-image: url("https://static6.depositphotos.com/1020310/637/i/450/depositphotos_6378631-stock-photo-green-background-with-copy-space.jpg");
   background-size: cover;       /* slika popunjava ceo deo */
@@ -31,18 +30,17 @@
 }
 
 .form-container {
-  max-height: 100px;
   background: white;
   padding: 35px;
   border-radius: 15px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   border: 2px solid #c8e6c8;
-  min-height: 500px;
+  min-height: 528px;
 }
 
 .welcome-screen {
   text-align: center;
-  padding: 15px 20px;
+  padding: 5px 20px;
 }
 
 .welcome-screen h2 {
@@ -231,7 +229,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: -10px;
+  margin-top: 10px;
   /* UKLONI margin-top: 120px odavde */
 }
 
@@ -349,11 +347,6 @@
   background: #f5f5f5;
 }
 
-.step-circle.completed {
-  border: 2px solid #149d1b;
-  background: #f5f5f5;
-}
-
 .step-circle.saved {
   border: 2px solid #149d1b;
   background: #f5f5f5;
@@ -389,13 +382,13 @@
 }
 
 .step-circle.active .placeholder-image,
-.step-circle.completed .placeholder-image {
+.step-circle.saved .placeholder-image {
   color: white;
 }
 
 .step-label {
   font-weight: 600;
-  color: #2d5a2d;
+  color: #1e4620;
   font-size: 1rem;
   flex: 1;
   line-height: 1.3;
@@ -418,12 +411,12 @@
 }
 
 .stepper-item:has(.step-circle.active) .step-connector {
-  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
-  top: 65px;
+  background-color: #149d1b !important;
+  top: 60px;
 }
 
-.stepper-item:has(.step-circle.completed) .step-connector{
-  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 100%);
+.stepper-item:has(.step-circle.saved) .step-connector{
+  background-color: #149d1b !important;
 }
 
 /* Completion checkmark styles */
@@ -488,13 +481,8 @@
   width: 12px;
   height: 12px;
 }
-
-.step-circle.completed .step-image img {
-  opacity: 0.8;
-}
-
 .step-circle.saved .step-image img {
-  opacity: 0.8;
+  opacity: 0.9  ;
 }
 
 .step-circle.attention .step-image img {
@@ -977,7 +965,7 @@ select.error:focus {
 
 .decision-buttons .btn-secondary {
   background: linear-gradient(135deg, #95a5a6, #bdc3c7);
-  color: white;
+  color: rgb(126, 6, 6);
 }
 
 .decision-buttons .btn-secondary:hover {
@@ -1113,6 +1101,8 @@ select.error:focus {
 
 .modal-body {
   padding: 20px 30px;
+        background-color: rgba(235, 255, 208, 0.9);
+
 }
 
 .modal-body h3 {
@@ -1673,116 +1663,292 @@ select.error:focus {
 /**********************************OVO JE ZA PRETRAGU INCOPLETE ASSESSMENTA***************************************************************************************/
 /**********************************OVO JE ZA PRETRAGU INCOPLETE ASSESSMENTA***************************************************************************************/
 /* Dodaj ove stilove u tvoj CSS fajl */
-
-.assessment-progress {
-  text-align: center;
-  margin: 20px 0;
-}
-
-.assessment-progress p {
-  margin-bottom: 15px;
-  color: #666;
-  font-size: 14px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 10px 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #34d399);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-/* Dodatni stilovi za modalne */
+/* Modal stilovi */
 .modal-overlayq {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: modalFadeIn 0.5s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-contentq {
-  background: white;
-  border-radius: 12px;
-  max-width: 500px;
+  background: url('https://media.istockphoto.com/id/1967651878/vector/abstract-background-with-an-image-of-flowing-wave-lines-in-the-sky_green.jpg?s=612x612&w=0&k=20&c=5EuuBMEAniB2KPzfhsr8c3AAgSFca6dj1MUozyCPmro=') center/cover;
+  border-radius: 16px;
+  max-width: 520px;
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-headerq {
-  padding: 30px;
+  padding: 30px 30px 20px;
   text-align: center;
   border-bottom: 1px solid #e5e7eb;
+  position: relative;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+  transform: scale(1.05);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.95);
 }
 
 .modal-icon {
   margin-bottom: 20px;
 }
 
-.modal-headerq h2 {
+.modal-greeting h2 {
   margin: 0 0 15px 0;
   color: #1f2937;
   font-size: 24px;
+  font-weight: 600;
 }
 
-.modal-headerq p {
+.modal-greeting p {
   margin: 0;
   color: #6b7280;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 16px;
 }
 
 .modal-body {
-  padding: 20px 30px;
+  color: #149d1b;
+  background-color: rgba(50, 83, 8, 0.9);
+  padding: 25px 30px;
+}
+
+.assessment-progress {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.progress-text {
+  color: #374151;
+  font-size: 14px;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.progress-bar-inline {
+  flex: 1;
+  min-width: 120px;
+  height: 10px;
+  background-color: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 6px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .modal-footer {
-  padding: 20px 30px;
-  border-top: 1px solid #e5e7eb;
+  padding: 20px 30px 30px;
+  border-top: 1px solid #ceffcb;
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .modal-btn {
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 14px 28px;
+  border-radius: 10px;
   border: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-primary.modal-btn {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .btn-primary.modal-btn:hover {
-  background-color: #059669;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
-.btn-secondary.modal-btn {
-  background-color: #6b7280;
-  color: white;
+.btn-primary.modal-btn:active {
+  transform: translateY(0);
 }
 
-.btn-secondary.modal-btn:hover {
-  background-color: #4b5563;
+.btn-go-home {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ padding: 12px 24px;
+ background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+ color: white;
+ border: none;
+ border-radius: 10px;
+ font-weight: 600;
+ font-size: 14px;
+ text-decoration: none;
+ cursor: pointer;
+ transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+ box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+ position: relative;
+ overflow: hidden;
+ min-width: 120px;
+ float: right;
+ margin-right: 50px;
+}
+
+.btn-go-home::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ left: -100%;
+ width: 100%;
+ height: 100%;
+ background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+ transition: left 0.5s;
+}
+
+.btn-go-home:hover::before {
+ left: 100%;
+}
+
+.btn-go-home:hover {
+ background: linear-gradient(135deg, #475569 0%, #334155 100%);
+ transform: translateY(-2px);
+ box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
+}
+
+.btn-go-home:active {
+ transform: translateY(0);
+ box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+}
+
+.btn-go-home:focus {
+ outline: none;
+ box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.2);
+}
+/* Responsive */
+@media (max-width: 640px) {
+  .modal-contentq {
+    margin: 20px;
+    width: calc(100% - 40px);
+  }
+  
+  .modal-headerq {
+    padding: 25px 20px 15px;
+  }
+  
+  .modal-body {
+      background-color: rgba(235, 255, 208, 0.9);
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    padding: 15px 20px 25px;
+  }
+  
+  .progress-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .progress-text {
+    white-space: normal;
+  }
+  
+  .progress-bar-inline {
+    width: 100%;
+  }
+  
+  .modal-greeting h2 {
+    font-size: 22px;
+  }
+  
+  .modal-greeting p {
+    font-size: 15px;
+  }
 }
 /**********************************OVO JE ZA PRETRAGU INCOPLETE ASSESSMENTA***************************************************************************************/

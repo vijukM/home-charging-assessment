@@ -87,30 +87,74 @@ const [isLoadingIncomplete, setIsLoadingIncomplete] = useState(false);
 
     // Jednostavan lokalni podatci za gradove
     const localCities = {
-      'Serbia': [
-        { id: 1, name: 'Belgrade' },
-        { id: 2, name: 'Novi Sad' },
-        { id: 3, name: 'Niš' },
-        { id: 4, name: 'Kragujevac' },
-        { id: 5, name: 'Subotica' },
-        { id: 6, name: 'Pančevo' }
-      ],
-      'Germany': [
-        { id: 1, name: 'Berlin' },
-        { id: 2, name: 'Munich' },
-        { id: 3, name: 'Hamburg' },
-        { id: 4, name: 'Frankfurt' },
-        { id: 5, name: 'Cologne' }
-      ],
-      'United States': [
-        { id: 1, name: 'New York' },
-        { id: 2, name: 'Los Angeles' },
-        { id: 3, name: 'Chicago' },
-        { id: 4, name: 'Houston' },
-        { id: 5, name: 'Miami' }
-      ]
-      // dodaj ostale zemlje...
-    };
+ 'Serbia': [
+   { id: 1, name: 'Belgrade' },
+   { id: 2, name: 'Novi Sad' },
+   { id: 3, name: 'Niš' },
+   { id: 4, name: 'Kragujevac' },
+   { id: 5, name: 'Subotica' },
+   { id: 6, name: 'Pančevo' },
+   { id: 7, name: 'Zrenjanin' },
+   { id: 8, name: 'Leskovac' },
+   { id: 9, name: 'Užice' },
+   { id: 10, name: 'Vršac' },
+   { id: 11, name: 'Sombor' },
+   { id: 12, name: 'Kikinda' },
+   { id: 13, name: 'Loznica' },
+   { id: 14, name: 'Vranje' },
+   { id: 15, name: 'Novi Pazar' },
+   { id: 16, name: 'Čačak' },
+   { id: 17, name: 'Valjevo' },
+   { id: 18, name: 'Smederevo' },
+   { id: 19, name: 'Zaječar' },
+   { id: 20, name: 'Kruševac' },
+   { id: 21, name: 'Šabac' }
+ ],
+ 'Germany': [
+   { id: 1, name: 'Berlin' },
+   { id: 2, name: 'Munich' },
+   { id: 3, name: 'Hamburg' },
+   { id: 4, name: 'Frankfurt' },
+   { id: 5, name: 'Cologne' }
+ ],
+ 'United States': [
+   { id: 1, name: 'New York' },
+   { id: 2, name: 'Los Angeles' },
+   { id: 3, name: 'Chicago' },
+   { id: 4, name: 'Houston' },
+   { id: 5, name: 'Miami' }
+ ],
+ 'France': [
+   { id: 1, name: 'Paris' },
+   { id: 2, name: 'Lyon' },
+   { id: 3, name: 'Marseille' },
+   { id: 4, name: 'Toulouse' },
+   { id: 5, name: 'Nice' },
+   { id: 6, name: 'Nantes' },
+   { id: 7, name: 'Bordeaux' },
+   { id: 8, name: 'Lille' }
+ ],
+ 'Italy': [
+   { id: 1, name: 'Rome' },
+   { id: 2, name: 'Milan' },
+   { id: 3, name: 'Naples' },
+   { id: 4, name: 'Turin' },
+   { id: 5, name: 'Florence' },
+   { id: 6, name: 'Venice' },
+   { id: 7, name: 'Bologna' },
+   { id: 8, name: 'Genoa' }
+ ],
+ 'United Kingdom': [
+   { id: 1, name: 'London' },
+   { id: 2, name: 'Manchester' },
+   { id: 3, name: 'Birmingham' },
+   { id: 4, name: 'Edinburgh' },
+   { id: 5, name: 'Glasgow' },
+   { id: 6, name: 'Liverpool' },
+   { id: 7, name: 'Bristol' },
+   { id: 8, name: 'Leeds' }
+ ]
+};
     setCities(localCities[countryName] || []);
   };
 
@@ -1944,7 +1988,7 @@ case 'EvChargerInfo':
                 </svg>
               </div>
               <h2>Assessment Completed!</h2>
-              <p>Congratulations! You have successfully completed the EV Charger Assessment. Based on your information, we can now provide you with personalized recommendations.</p>
+              <h4>Congratulations! You have successfully completed the EV Charger Assessment. Based on your information, we can now provide you with personalized recommendations.</h4>
             </div>
             
             <div className="modal-body">
@@ -1953,7 +1997,7 @@ case 'EvChargerInfo':
             
             <div className="modal-footer">
               <button 
-                className="btn btn-secondary modal-btn"
+                className="btn btn-go-home modal-btn"
                 onClick={handleBackToHome}>
                 Back to Home
               </button>
@@ -1966,56 +2010,66 @@ case 'EvChargerInfo':
           </div>
         </div>
       )}
-
-      {/* NOVO - Incomplete Assessment Modal */}
-      {showIncompleteModal && (
-        <div className="modal-overlayq">
-          <div className="modal-contentq">
-            <div className="modal-headerq">
-              <div className="modal-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="10" fill="#f39c12"/>
-                  <path d="M12 16v-4M12 8h.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+{showIncompleteModal && (
+  <div className="modal-overlayq">
+    <div className="modal-contentq">
+      <div className="modal-headerq">
+        <button 
+          className="modal-close-btn"
+          onClick={() => setShowIncompleteModal(false)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        
+        <div className="modal-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#f39c12"/>
+            <path d="M12 16v-4M12 8h.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        
+        <div className="modal-greeting">
+          <h2>
+            Hi {incompleteAssessment?.personalInfo?.firstName || 'there'}  {incompleteAssessment?.personalInfo?.lastName || ''}! 
+          </h2>
+          <h4>We found that you have an incomplete assessment.</h4>
+          <h4> Would you like to continue where you left off?</h4>
+        </div>
+      </div>
+      
+      <div className="modal-body">
+        {incompleteAssessment && (
+          <div className="assessment-progress">
+            <div className="progress-info">
+              <span className="progress-text">
+                <strong>Last saved step:</strong> Step {(incompleteAssessment.currentPage || 0)} of {steps.length}
+              </span>
+              <div className="progress-bar-inline">
+                <div 
+                  className="progress-fill" 
+                  style={{ 
+                    width: `${((incompleteAssessment.currentPage || 0) / steps.length) * 100}%` 
+                  }}
+                ></div>
               </div>
-              <h2>Incomplete Assessment Found</h2>
-              <p>We found that you have an incomplete assessment. Would you like to continue where you left off, or start a new assessment?</p>
-            </div>
-            
-            <div className="modal-body">
-              {incompleteAssessment && (
-                <div className="assessment-progress">
-                  <p><strong>Last saved step:</strong> Step {(incompleteAssessment.currentPage || 0)} of {steps.length}</p>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ 
-                        width: `${((incompleteAssessment.currentPage || 0) / steps.length) * 100}%` 
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="modal-footer">
-              <button 
-                className="btn btn-secondary modal-btn"
-                onClick={handleStartNewAssessmentFromModal}
-              >
-                Start New Assessment
-              </button>
-              <button 
-                className="btn btn-primary modal-btn"
-                onClick={handleContinueIncomplete}
-              >
-                Continue Previous Assessment
-              </button>
             </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
+      
+      <div className="modal-footer">
+        <button 
+          className="btn btn-primary modal-btn"
+          onClick={handleContinueIncomplete}
+        >
+          Continue Assessment
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

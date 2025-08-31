@@ -91,7 +91,7 @@ function Home() {
             <div className="hero-buttons">
               <a 
                 href="/assessment" 
-                className="btn-primary"
+                className="btn-primaryy"
                 onClick={handleAssessmentClick}
               >
                 Start Free Assessment
@@ -127,7 +127,7 @@ function Home() {
                 </div>
                 <div>
                   <strong style={{ color: "#2d5a2d" }}>Compatible</strong>
-                  <p style={{ margin: 0, color: "#666", fontSize: "0.9rem" }}>
+                  <p style={{ margin: 0, color: "#666", fontSize: "0.88rem" }}>
                     Ready for installation
                   </p>
                 </div>
@@ -151,10 +151,14 @@ function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+       {/* Features Section */}
       <section className="features" id="features">
         <div className="section-container">
           <div className="section-header">
+            <div className="section-badge">
+              <i className="fas fa-star"></i>
+              Premium Features
+            </div>
             <h2 className="section-title">Why Choose Our Assessment?</h2>
             <p className="section-subtitle">
               Comprehensive analysis of your home's electrical system and charging requirements
@@ -163,34 +167,63 @@ function Home() {
 
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-search"></i>
+              <div className="feature-header">
+                <div className="feature-icon">
+                  <i className="fas fa-search"></i>
+                </div>
+                <div className="feature-badge">Advanced</div>
               </div>
               <h3>Detailed Analysis</h3>
               <p>
                 Thorough evaluation of your electrical panel, wiring, and infrastructure to
                 determine charging compatibility.
               </p>
+              <div className="feature-footer">
+                <span className="feature-time">
+                  <i className="fas fa-clock"></i>
+                  15 minutes
+                </span>
+              </div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-chart-line"></i>
+
+            <div className="feature-card feature-highlighted">
+              <div className="feature-header">
+                <div className="feature-icon">
+                  <i className="fas fa-chart-line"></i>
+                </div>
+                <div className="feature-badge popular">Most Popular</div>
               </div>
               <h3>Cost Estimation</h3>
               <p>
                 Accurate cost breakdown for installation, including equipment, labor, and
                 potential electrical upgrades.
               </p>
+              <div className="feature-footer">
+                <span className="feature-time">
+                  <i className="fas fa-calculator"></i>
+                  Instant results
+                </span>
+              </div>
             </div>
+
             <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-shield-alt"></i>
+              <div className="feature-header">
+                <div className="feature-icon">
+                  <i className="fas fa-shield-alt"></i>
+                </div>
+                <div className="feature-badge">Certified</div>
               </div>
               <h3>Safety First</h3>
               <p>
                 Comprehensive safety assessment to ensure your charging installation meets all
                 safety standards and codes.
               </p>
+              <div className="feature-footer">
+                <span className="feature-time">
+                  <i className="fas fa-check-circle"></i>
+                  100% compliant
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -255,19 +288,6 @@ export default function App() {
             </ProtectedRoute>
           } 
         />
-        
-        {/* User Routes - Add other protected user routes here */}
-        {/* Example:
-        <Route 
-          path="/my-assessments" 
-          element={
-            <ProtectedRoute>
-              <MyAssessments />
-            </ProtectedRoute>
-          } 
-        />
-        */}
-        
       </Routes>
       <Footer />
     </Router>

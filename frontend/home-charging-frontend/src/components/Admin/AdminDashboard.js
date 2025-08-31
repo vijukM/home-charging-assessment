@@ -87,9 +87,9 @@ function AdminDashboard() {
 
   const getStatusBadge = (assessment) => {
     if (assessment.IsComplete) {
-      return <span className="status-badge completed">Završen</span>;
+      return <span className="status-badge completed">Completed</span>;
     }
-    return <span className="status-badge incomplete">U toku</span>;
+    return <span className="status-badge incomplete">In progress</span>;
   };
 
   const getProgressPercentage = (currentPage) => {
@@ -151,7 +151,6 @@ const formatMinutesToTime = (decimalMinutes) => {
       <div className="dashboard-header">
         <div className="header-content">
           <h1>Admin Dashboard</h1>
-          <p>Overview of home charging assessments</p>
         </div>
         <div className="header-actions">
           <button className="btn-refresh" onClick={loadDashboardData}>
@@ -478,59 +477,6 @@ const formatMinutesToTime = (decimalMinutes) => {
                     <span className="percentage">{brand.percentage?.toFixed(1) || 0}%</span>
                   </div>
                 )) : <p className="no-data">Backend missing topExistingEvChargerBrands data</p>}
-            </div>
-          </div>
-
-          {/* Recent Assessments */}
-          <div className="overview-card wide">
-            <div className="card-header">
-              <h3>Recent Assessments</h3>
-              <a href="/admin/assessments" className="view-all-link">
-                View All <i className="fas fa-arrow-right"></i>
-              </a>
-            </div>
-            <div className="recent-assessments">
-              {recentAssessments.length > 0 ? (
-                recentAssessments.map(assessment => (
-                  <div key={assessment.id} className="recent-item">
-                    <div className="recent-avatar">
-                      <i className="fas fa-user"></i>
-                    </div>
-                    <div className="recent-info">
-                      <div className="recent-name">
-                        {assessment.PersonalInfo.FirstName} {assessment.PersonalInfo.LastName}
-                      </div>
-                      <div className="recent-email">{assessment.PersonalInfo.Email}</div>
-                      <div className="recent-details">
-                        {assessment.VehicleInfo.Brand && 
-                          `${assessment.VehicleInfo.Brand} ${assessment.VehicleInfo.Model}`
-                        }
-                        {assessment.HomeInfo.Address.City && ` • ${assessment.HomeInfo.Address.City}`}
-                      </div>
-                    </div>
-                    <div className="recent-status">
-                      {getStatusBadge(assessment)}
-                      <div className="progress-mini">
-                        <div className="progress-bar-mini">
-                          <div 
-                            className="progress-fill-mini" 
-                            style={{ width: `${getProgressPercentage(assessment.CurrentPage)}%` }}
-                          ></div>
-                        </div>
-                        <span className="progress-text-mini">
-                          {getProgressPercentage(assessment.CurrentPage)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="recent-time">
-                      <i className="fas fa-clock"></i>
-                      {formatDate(assessment.CreatedAt)}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="no-data">No recent assessments</p>
-              )}
             </div>
           </div>
         </div>

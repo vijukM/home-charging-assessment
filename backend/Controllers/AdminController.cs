@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using home_charging_assessment.Models;
 using home_charging_assessment.Models.DTOs;
 using home_charging_assessment.ServiceInterfaces;
+using home_charging_assessment.Services;
 
 namespace home_charging_assessment.Controllers
 {
@@ -12,12 +13,14 @@ namespace home_charging_assessment.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
         private readonly IAssessmentService _assessmentService;
 
-        public AdminController(IAuthService authService, IAssessmentService assessmentService)
+        public AdminController(IAuthService authService, IAssessmentService assessmentService, IEmailService emailService)
         {
             _authService = authService;
             _assessmentService = assessmentService;
+            _emailService = emailService;
         }
 
         // Existing user management methods
@@ -486,6 +489,60 @@ namespace home_charging_assessment.Controllers
                 return StatusCode(500, new { message = "Error updating user", error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Send assessment reminder email to customer
+        /// </summary>
+        [HttpPost("assessments/{assessmentId}/send-reminder")]
+        public async Task<IActionResult> SendAssessmentReminder(string assessmentId, [FromQuery] string partitionKey)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(partitionKey))
+                {
+                    return BadRequest(new { message = "PartitionKey (customerId) is required" });
+                }
+
+                var assessment = await _assessmentService.GetAsync(assessmentId, partitionKey);
+                if (assessment == null)
+                {
+                    return NotFound(new { message = "Assessment not found" });
+                }
+
+                if (assessment.IsComplete)
+                {
+                    return BadRequest(new { message = "Cannot send reminder for completed assessment" });
+                }
+
+                if (assessment.PersonalInfo == null ||
+                    string.IsNullOrEmpty(assessment.PersonalInfo.Email) ||
+                    string.IsNullOrEmpty(assessment.PersonalInfo.FirstName))
+                {
+                    return BadRequest(new { message = "Assessment missing required personal information for sending reminder" });
+                }
+
+                await _emailService.SendAssessmentReminderAsync(
+                    assessment.PersonalInfo.Email,
+                    assessment.PersonalInfo.FirstName,
+                    assessment.PersonalInfo.LastName ?? "",
+                    assessment.CurrentPage
+                );
+
+                return Ok(new
+                {
+                    message = "Assessment reminder sent successfully",
+                    sentTo = assessment.PersonalInfo.Email,
+                    customerName = $"{assessment.PersonalInfo.FirstName} {assessment.PersonalInfo.LastName}".Trim(),
+                    currentPage = assessment.CurrentPage
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error sending assessment reminder", error = ex.Message });
+            }
+        }
+
+
     }
 
     // Additional DTO for bulk actions

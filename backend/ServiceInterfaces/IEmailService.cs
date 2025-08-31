@@ -5,5 +5,7 @@
         Task SendEmailVerificationAsync(string email, string username, string verificationUrl);
         Task SendPasswordResetAsync(string email, string username, string resetUrl);
         Task SendWelcomeEmailAsync(string email, string username);
+        Task SendAssessmentReminderAsync(string email, string firstName, string lastName, int currentPage);
+
     }
 }

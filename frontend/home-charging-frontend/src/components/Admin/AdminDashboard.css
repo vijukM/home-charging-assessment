@@ -2,7 +2,7 @@
 
 .admin-dashboard {
   padding: 24px;
-  background: #f8fafc;
+  background-image: url("https://files.123freevectors.com/wp-content/original/108136-light-green-wave.jpg");
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -11,9 +11,9 @@
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: flex-start; 
   margin-bottom: 32px;
-  background: white;
+  background-image: url('../../res/header-bg2.jpg');
   padding: 24px;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);

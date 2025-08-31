@@ -126,9 +126,6 @@ const DeleteUserModal = ({ user, loading, onConfirm, onClose }) => {
               </div>
             </div>
           </div>
-          <div className="warning-text">
-            <p><strong>Warning:</strong> This action cannot be undone. All user data, assessments, and associated records will be permanently deleted.</p>
-          </div>
         </div>
       </div>
       
@@ -835,79 +832,96 @@ const handleSave = async () => {
   };
 
   return (
-    <BaseModal className="view-modal user-profile-modal" onClose={onClose}>
-      <div className="modal-body">
-        {/* Profile Section */}
-        <div className="profile-section">
-          <div className="profile-avatar">
-            <i className="fas fa-user"></i>
+  <BaseModal className="view-modal user-profile-modal" onClose={onClose}>
+    {/* Close button in top-right corner */}
+    <button className="modal-close-btn" onClick={onClose} title="Close">
+      <i className="fas fa-times"></i>
+    </button>
+    
+    <div className="modal-body">
+      {/* Header Section */}
+      <div className="profile-section">
+        <div className="profile-header">
+          <div className="profile-header-icon">
+            <i className="fas fa-user-cog"></i>
           </div>
-          <h2 className="profile-username">{formData.username || 'Unknown User'}</h2>
-          
-          {/* Edit Toggle Button */}
-          <div className="edit-actions">
-            {saved && (
-              <span className="saved-indicator">
-                <i className="fas fa-check"></i> Saved
-              </span>
-            )}
-            <button 
-              className={`edit-toggle ${isEditing ? 'active' : ''}`}
-              onClick={toggleEdit}
-              title={isEditing ? 'Cancel Edit' : 'Edit User'}
-            >
-              <i className={`fas ${isEditing ? 'fa-times' : 'fa-edit'}`}></i>
-            </button>
+          <h2 className="profile-title">User Information</h2>
+        </div>
+        
+        {/* Edit Actions */}
+        <div className="edit-actions">
+          {saved && (
+            <span className="saved-indicator">
+              <i className="fas fa-check"></i> Saved
+            </span>
+          )}
+            {isEditing && (
+        <button 
+          className="btn-primary" 
+          onClick={handleSave}
+          disabled={loading}
+        >
+          <i className="fas fa-save"></i>
+        </button>
+      )}
+          <button 
+            className={`edit-toggle ${isEditing ? 'active' : ''}`}
+            onClick={toggleEdit}
+            title={isEditing ? 'Cancel Edit' : 'Edit User'}
+          >
+            <i className={`fas ${isEditing ? 'fa-times' : 'fa-edit'}`}></i>
+          </button>
+        </div>
+      </div>
+
+      {/* User Details Grid */}
+      <div className="user-details-grid">
+        {/* Row 1 - User ID (spans full width) */}
+        <div className={`detail-row full-width ${isEditing ? 'editing' : ''}`}>
+          <label>User ID:</label>
+          <span className="user-id-value">{formData.id}</span>
+        </div>
+
+        {/* Row 2 - Username and Email */}
+        <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+          <div className="detail-column">
+            <label>Username:</label>
+            {renderField('Username', formData.username, 'username')}
+          </div>
+          <div className="detail-column">
+            <label>Email:</label>
+            <div className="email-with-verification">
+              {isEditing ? (
+                renderField('Email', formData.email, 'email', 'email')
+              ) : (
+                <>
+                  <span className="email-text">{formData.email}</span>
+                  {formData.emailVerified ? (
+                    <span 
+                      className="verification-status verified" 
+                      title="Email is verified"
+                    >
+                      <i className="fas fa-check-circle"></i>
+                    </span>
+                  ) : (
+                    <span 
+                      className="verification-status unverified" 
+                      title="Email is not verified"
+                    >
+                      <i className="fas fa-exclamation-triangle"></i>
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* User Details Grid */}
-        <div className="user-details-grid">
-          {/* Row 1 - User ID (spans 2 columns) */}
-          <div className={`detail-row full-width ${isEditing ? 'editing' : ''}`}>
-            <label>User ID:</label>
-            <span className="user-id-value">{formData.id}</span>
-          </div>
-
-          {/* Row 2 - Username and Email */}
-          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
-            <div className="detail-column">
-              <label>Username:</label>
-              {renderField('Username', formData.username, 'username')}
-            </div>
-            <div className="detail-column">
-              <label>Email:</label>
-              <div className="email-with-verification">
-                {isEditing ? (
-                  renderField('Email', formData.email, 'email', 'email')
-                ) : (
-                  <>
-                    <span className="email-text">{formData.email}</span>
-                    {formData.emailVerified ? (
-                      <span 
-                        className="verification-status verified" 
-                        title="Email is verified"
-                      >
-                        <i className="fas fa-check-circle"></i>
-                      </span>
-                    ) : (
-                      <span 
-                        className="verification-status unverified" 
-                        title="Email is not verified"
-                      >
-                        <i className="fas fa-exclamation-triangle"></i>
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Row 3 - Status and Role */}
-          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
-            <div className="detail-column">
-              <label>Status:</label>
+        {/* Row 3 - Status and Role */}
+        <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+          <div className="detail-column">
+            <label>Status:</label>
+            <div className={isEditing ? '' : 'center-content'}>
               {isEditing ? (
                 renderField('Status', formData.isActive ? 'true' : 'false', 'isActive', 'select', [
                   { value: 'true', label: 'Active' },
@@ -917,8 +931,10 @@ const handleSave = async () => {
                 <StatusBadge user={formData} />
               )}
             </div>
-            <div className="detail-column">
-              <label>Primary Role:</label>
+          </div>
+          <div className="detail-column">
+            <label>Primary Role:</label>
+            <div className={isEditing ? '' : 'center-content'}>
               {isEditing ? (
                 renderField('Role', formData.roles?.[0] || 'User', 'primaryRole', 'select', [
                   { value: 'User', label: 'User' },
@@ -931,63 +947,40 @@ const handleSave = async () => {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Row 4 - Created At and Last Login */}
-          <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+        {/* Row 4 - Created At and Last Login */}
+        <div className={`detail-row two-columns ${isEditing ? 'editing' : ''}`}>
+          <div className="detail-column">
+            <label>Created:</label>
+            <span className="date-value">{formatDate(formData.createdAt)}</span>
+          </div>
+          <div className="detail-column">
+            <label>Last Login:</label>
+            <span className="date-value">{formatDate(formData.lastLogin)}</span>
+          </div>
+        </div>
+
+        {/* Row 5 - Email Verified (samo u edit modu) */}
+        {isEditing && (
+          <div className="detail-row two-columns editing">
             <div className="detail-column">
-              <label>Created At:</label>
-              <span className="date-value">{formatDate(formData.createdAt)}</span>
+              <label>Email Verified:</label>
+              {renderField('Email Verified', formData.emailVerified ? 'true' : 'false', 'emailVerified', 'select', [
+                { value: 'true', label: 'Verified' },
+                { value: 'false', label: 'Not Verified' }
+              ])}
             </div>
             <div className="detail-column">
-              <label>Last Login:</label>
-              <span className="date-value">{formatDate(formData.lastLogin)}</span>
+              {/* Prazan prostor */}
             </div>
           </div>
-
-          {/* Row 5 - Email Verified (samo u edit modu) */}
-          {isEditing && (
-            <div className="detail-row two-columns editing">
-              <div className="detail-column">
-                <label>Email Verified:</label>
-                {renderField('Email Verified', formData.emailVerified ? 'true' : 'false', 'emailVerified', 'select', [
-                  { value: 'true', label: 'Verified' },
-                  { value: 'false', label: 'Not Verified' }
-                ])}
-              </div>
-              <div className="detail-column">
-                {/* Prazan prostor */}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <div className="modal-footer">
-        <button className="btn-secondary" onClick={onClose}>
-          <i className="fas fa-times"></i> Close
-        </button>
-        {isEditing && (
-          <button 
-            className="btn-primary" 
-            onClick={handleSave}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i> Saving...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-save"></i> Save Changes
-              </>
-            )}
-          </button>
         )}
       </div>
-    </BaseModal>
-  );
+    </div>
+  </BaseModal>
+);
 };
-
 
 
 // Glavni AllUsers komponenta
@@ -1457,82 +1450,84 @@ function AllUsers() {
           )}
 
           {/* Users Table */}
-          <div className="table-container">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>
-                    <input
-                      type="checkbox"
-                      checked={selectAll}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Role</th>
-                  <th>Assessment</th>
-                  <th>Created</th>
-                  <th>Last Login</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(user => (
-                  <tr key={user.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.includes(user.id)}
-                        onChange={() => handleSelectItem(user.id)}
-                      />
-                    </td>
-                    <td>
-                      <strong>{user.username || '—'}</strong>
-                    </td>
-                    <td>
-                      <EmailWithVerification 
-                        email={user.email} 
-                        emailVerified={user.emailVerified} 
-                      />
-                    </td>
-                    <td><StatusBadge user={user} /></td>
-                    <td><PrimaryRoleBadge roles={user.roles} /></td>
-                    <td>
-                      <button 
-                        className="btn-assessments" 
-                        title="View Assessment"
-                        onClick={() => handleViewUserAssessments(user)}
-                      >
-                        <i className="fas fa-clipboard-list"></i>
-                      </button>
-                    </td>
-                    <td>{formatDate(user.createdAt)}</td>
-                    <td>{formatDate(user.lastLogin)}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button 
-                          className="btn-view" 
-                          title="View Details"
-                          onClick={() => handleViewDetails(user)}
-                        >
-                          <i className="fas fa-eye"></i>
-                        </button>
-                        <button 
-                          className="btn-delete" 
-                          title="Delete"
-                          onClick={() => handleDeleteUser(user)}
-                        >
-                          <i className="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Users Table */}
+<div className="table-container">
+  <table className="users-table">
+    <thead>
+      <tr>
+        <th>
+          <input
+            type="checkbox"
+            checked={selectAll}
+            onChange={handleSelectAll}
+          />
+        </th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th style={{ textAlign: 'center', paddingRight:'40px' }}>Role</th>
+        <th>Assessment</th>
+        <th>Created at</th>
+        <th>Last login</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {users.map(user => (
+        <tr key={user.id}>
+          <td>
+            <input
+              type="checkbox"
+              checked={selectedItems.includes(user.id)}
+              onChange={() => handleSelectItem(user.id)}
+            />
+          </td>
+          <td>
+            <strong>{user.username || '—'}</strong>
+          </td>
+          <td>
+            <EmailWithVerification 
+              email={user.email} 
+              emailVerified={user.emailVerified} 
+            />
+          </td>
+          <td><StatusBadge user={user} /></td>
+          <td><PrimaryRoleBadge roles={user.roles} /></td>
+         <td style={{ textAlign: 'center' }}>
+  <button 
+    className="btn-assessments" 
+    title="View Assessment"
+    onClick={() => handleViewUserAssessments(user)}
+    style={{ display: 'block', margin: '0 25px' }}
+  >
+    <i className="fas fa-clipboard-list"></i>
+  </button>
+</td>
+          <td>{formatDate(user.createdAt)}</td>
+          <td>{formatDate(user.lastLogin)}</td>
+          <td>
+            <div className="action-buttons">
+              <button 
+                className="btn-view" 
+                title="View Details"
+                onClick={() => handleViewDetails(user)}
+              >
+                <i className="fas fa-eye"></i>
+              </button>
+              <button 
+                className="btn-delete" 
+                title="Delete"
+                onClick={() => handleDeleteUser(user)}
+              >
+                <i className="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
         </div>
 
         {/* Pagination */}
@@ -1545,45 +1540,106 @@ function AllUsers() {
           </div>
           
           <div className="pagination">
-            <button 
-              className="page-btn"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              Previous
-            </button>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let page;
-              if (totalPages <= 5) {
-                page = i + 1;
-              } else if (currentPage <= 3) {
-                page = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                page = totalPages - 4 + i;
-              } else {
-                page = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={page}
-                  className={`page-btn ${currentPage === page ? 'active' : ''}`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              );
-            })}
-            
-            <button 
-              className="page-btn"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next
-            </button>
-          </div>
+  {/* Go to first page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage(1)}
+    title="First page"
+  >
+    <i className="fas fa-angle-double-left"></i>
+  </button>
+  
+  {/* Previous page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage(currentPage - 1)}
+    title="Previous page"
+  >
+    <i className="fas fa-angle-left"></i>
+  </button>
+  
+  {/* Page numbers - always show 2 numbers */}
+  {(() => {
+    const pageNumbers = [];
+    
+    if (totalPages <= 2) {
+      // If total pages is 1 or 2, show all
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else if (currentPage === 1) {
+      // If on first page, show 1, 2
+      pageNumbers.push(1, 2);
+    } else if (currentPage === totalPages) {
+      // If on last page, show last-1, last
+      pageNumbers.push(totalPages - 1, totalPages);
+    } else {
+      // If in middle, show current-1, current
+      pageNumbers.push(currentPage - 1, currentPage);
+    }
+    
+    return pageNumbers.map((page, index) => (
+      <button
+        key={page}
+        className={`page-btn ${currentPage === page ? 'active' : ''}`}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </button>
+    ));
+  })()}
+  
+  {/* Show dots only if there's a gap between displayed pages and last page */}
+  {(() => {
+    const lastDisplayedPage = currentPage === 1 ? 2 : 
+                             currentPage === totalPages ? totalPages - 1 : 
+                             currentPage;
+    
+    // Show dots only if there's at least one page between last displayed and total pages
+    return totalPages > 2 && lastDisplayedPage < totalPages - 1 && (
+      <span className="page-dots">...</span>
+    );
+  })()}
+  
+  {/* Show last page if there's a gap */}
+  {(() => {
+    const lastDisplayedPage = currentPage === 1 ? 2 : 
+                             currentPage === totalPages ? totalPages - 1 : 
+                             currentPage;
+    
+    // Show last page only if there's at least one page between last displayed and total pages
+    return totalPages > 2 && lastDisplayedPage < totalPages - 1 && (
+      <button
+        className="page-btn"
+        onClick={() => setCurrentPage(totalPages)}
+      >
+        {totalPages}
+      </button>
+    );
+  })()}
+  
+  {/* Next page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage(currentPage + 1)}
+    title="Next page"
+  >
+    <i className="fas fa-angle-right"></i>
+  </button>
+  
+  {/* Go to last page */}
+  <button 
+    className="page-btn nav-btn"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage(totalPages)}
+    title="Last page"
+  >
+    <i className="fas fa-angle-double-right"></i>
+  </button>
+</div>
         </div>
       </div>
 
